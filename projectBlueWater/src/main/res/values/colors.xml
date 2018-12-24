@@ -7,8 +7,8 @@
     <color name="overlay_light">#DDDDDD</color>
     <color name="ics_gray">#858585</color>
     <!--<color name="clearstream_blue">#97acec</color>-->
-    <color name="clearstream_blue">#8c9eff</color>
-    <color name="clearstream_dark">#303f9f</color>
+    <color name="clearstream_blue">#303f9f</color>
+    <color name="clearstream_dark">#8c9eff</color>
     <color name="custom_transparent_white">#CCFFFFFF</color>
     <color name="selection_background_color_light">#FEBB20</color>
 
