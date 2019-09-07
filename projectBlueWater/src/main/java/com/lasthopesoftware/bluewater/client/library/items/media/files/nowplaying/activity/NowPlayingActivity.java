@@ -464,14 +464,16 @@ public class NowPlayingActivity extends AppCompatActivity {
 
 				final FilePropertiesProvider filePropertiesProvider =
 					new FilePropertiesProvider(connectionProvider, FilePropertyCache.getInstance(), ParsingScheduler.instance());
-				filePropertiesProvider.promiseFileProperties(serviceFile)
-					.eventually(LoopedInPromise.response(fileProperties -> {
-						if (localViewStructure != viewStructure) return null;
+				filePropertiesProvider
+					.promiseFileProperties(serviceFile)
+					.eventually(fileProperties -> {
+						if (localViewStructure != viewStructure) return Promise.empty();
 
-						localViewStructure.fileProperties = fileProperties;
-						setFileProperties(serviceFile, initialFilePosition, fileProperties);
-						return null;
-					}, messageHandler.getObject()))
+						return new LoopedInPromise<>(() -> {
+							localViewStructure.fileProperties = fileProperties;
+							return setFileProperties(serviceFile, initialFilePosition, fileProperties);
+						}, messageHandler.getObject());
+					})
 					.excuse(e -> LoopedInPromise.<Throwable, Boolean>response(exception -> handleIoException(serviceFile, initialFilePosition, exception), messageHandler.getObject()).promiseResponse(e));
 			}), messageHandler.getObject()));
 	}
@@ -532,7 +534,7 @@ public class NowPlayingActivity extends AppCompatActivity {
 		nowPlayingLayout.findView().setBackgroundColor(ColorUtils.setAlphaComponent(mediaStylePalette.getActionBarColor(), 0x66));
 	}
 
-	private void setFileProperties(final ServiceFile serviceFile, final long initialFilePosition, Map<String, String> fileProperties) {
+	private Void setFileProperties(final ServiceFile serviceFile, final long initialFilePosition, Map<String, String> fileProperties) {
 		final String artist = fileProperties.get(FilePropertiesProvider.ARTIST);
 		nowPlayingArtist.findView().setText(artist);
 
@@ -557,6 +559,8 @@ public class NowPlayingActivity extends AppCompatActivity {
 		}
 
 		setFileRating(serviceFile, 0f);
+
+		return null;
 	}
 
 	private void setFileRating(ServiceFile serviceFile, float rating) {
