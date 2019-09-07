@@ -552,7 +552,7 @@ public class NowPlayingActivity extends AppCompatActivity {
 			if (stringRating != null && !stringRating.isEmpty()) {
 				final float fileRating = Float.valueOf(stringRating);
 				setFileRating(serviceFile, fileRating);
-				return;
+				return null;
 			}
 		} catch (NumberFormatException e) {
 			logger.info("Failed to parse rating", e);
