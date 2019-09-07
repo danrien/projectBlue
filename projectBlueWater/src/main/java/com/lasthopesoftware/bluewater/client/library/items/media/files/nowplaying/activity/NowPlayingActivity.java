@@ -110,10 +110,11 @@ public class NowPlayingActivity extends AppCompatActivity {
 	private final LazyViewFinder<RelativeLayout> nowPlayingLayout = new LazyViewFinder<>(this, R.id.rlCtlNowPlaying);
 	private final LazyViewFinder<ImageButton> viewNowPlayingListButton = new LazyViewFinder<>(this, R.id.viewNowPlayingListButton);
 	private final LazyViewFinder<ImageButton> shuffleButton = new LazyViewFinder<>(this, R.id.repeatButton);
-	private final Lazy<Drawable> playButtonDrawable = new Lazy<>(() -> playButton.findView().getDrawable().getConstantState().newDrawable());
-	private final Lazy<Drawable> pauseButtonDrawable = new Lazy<>(() -> pauseButton.findView().getDrawable().getConstantState().newDrawable());
-	private final Lazy<Drawable> nextButtonDrawable = new Lazy<>(() -> nextButton.findView().getDrawable().getConstantState().newDrawable());
-	private final Lazy<Drawable> previousButtonDrawable = new Lazy<>(() -> previousButton.findView().getDrawable().getConstantState().newDrawable());
+	private final Lazy<Drawable> playButtonDrawable = new Lazy<>(() -> {
+		final Drawable copy = playButton.findView().getDrawable().getConstantState().newDrawable().mutate();
+		playButton.findView().setImageDrawable(copy);
+		return copy;
+	});
 	private final Lazy<Drawable> repeatDrawable = new Lazy<>(() -> ContextCompat.getDrawable(this, R.drawable.av_repeat_dark));
 	private final Lazy<Drawable> shuffleDrawable = new Lazy<>(() -> ContextCompat.getDrawable(this, R.drawable.av_no_repeat_dark));
 	private final Lazy<Drawable> screenOnDrawable = new Lazy<>(() -> ContextCompat.getDrawable(this, R.drawable.screen_on));
@@ -121,9 +122,9 @@ public class NowPlayingActivity extends AppCompatActivity {
 
 	private final Lazy<Drawable[]> tintableDrawables = new Lazy<>(() -> new Drawable[] {
 		playButtonDrawable.getObject(),
-		pauseButtonDrawable.getObject(),
-		nextButtonDrawable.getObject(),
-		previousButtonDrawable.getObject(),
+		pauseButton.findView().getDrawable(),
+		nextButton.findView().getDrawable(),
+		previousButton.findView().getDrawable(),
 		songRating.findView().getProgressDrawable(),
 		songProgressBar.findView().getProgressDrawable(),
 		viewNowPlayingListButton.findView().getDrawable(),
@@ -214,14 +215,16 @@ public class NowPlayingActivity extends AppCompatActivity {
 
 	private final Lazy<MediaStylePaletteProvider> lazyMediaStyleProvider = new Lazy<>(() -> new MediaStylePaletteProvider(this));
 
-	private final AbstractSynchronousLazy<Promise<MediaStylePalette>> lazyDefaultPalette = new AbstractSynchronousLazy<Promise<MediaStylePalette>>() {
+	private final CreateAndHold<Promise<Bitmap>> lazyDefaultBitmap = new AbstractSynchronousLazy<Promise<Bitmap>>() {
 		@Override
-		protected Promise<MediaStylePalette> create() {
+		protected Promise<Bitmap> create() {
 			final DefaultImageProvider defaultImageProvider = new DefaultImageProvider(NowPlayingActivity.this);
-			return defaultImageProvider.promiseFileBitmap()
-				.eventually(b -> lazyMediaStyleProvider.getObject().promisePalette(b));
+			return defaultImageProvider.promiseFileBitmap();
 		}
 	};
+
+	private final CreateAndHold<Promise<MediaStylePalette>> lazyDefaultPalette = new Lazy<>(() ->
+		lazyDefaultBitmap.getObject().eventually(b -> lazyMediaStyleProvider.getObject().promisePalette(b)));
 
 	private TimerTask timerTask;
 
@@ -251,7 +254,6 @@ public class NowPlayingActivity extends AppCompatActivity {
 
 		setNowPlayingBackgroundBitmap();
 
-		playButton.findView().setImageDrawable(playButtonDrawable.getObject());
 		playButton.findView().setOnClickListener(v -> {
 			if (!nowPlayingToggledVisibilityControls.getObject().isVisible()) return;
 			PlaybackService.play(v.getContext());
@@ -259,7 +261,6 @@ public class NowPlayingActivity extends AppCompatActivity {
 			pauseButton.findView().setVisibility(View.VISIBLE);
 		});
 
-		pauseButton.findView().setImageDrawable(pauseButtonDrawable.getObject());
 		pauseButton.findView().setOnClickListener(v -> {
 			if (!nowPlayingToggledVisibilityControls.getObject().isVisible()) return;
 			PlaybackService.pause(v.getContext());
@@ -267,13 +268,11 @@ public class NowPlayingActivity extends AppCompatActivity {
 			pauseButton.findView().setVisibility(View.INVISIBLE);
 		});
 
-		nextButton.findView().setImageDrawable(nextButtonDrawable.getObject());
 		nextButton.findView().setOnClickListener(v -> {
 			if (!nowPlayingToggledVisibilityControls.getObject().isVisible()) return;
 			PlaybackService.next(v.getContext());
 		});
 
-		previousButton.findView().setImageDrawable(previousButtonDrawable.getObject());
 		previousButton.findView().setOnClickListener(v -> {
 			if (!nowPlayingToggledVisibilityControls.getObject().isVisible()) return;
 			PlaybackService.previous(v.getContext());
@@ -334,7 +333,7 @@ public class NowPlayingActivity extends AppCompatActivity {
 			return;
 		}
 
-		new DefaultImageProvider(this).promiseFileBitmap()
+		lazyDefaultBitmap.getObject()
 			.eventually(bitmap -> new LoopedInPromise<>(() -> {
 				nowPlayingBackgroundBitmap = bitmap;
 
@@ -454,11 +453,6 @@ public class NowPlayingActivity extends AppCompatActivity {
 
 				final ViewStructure localViewStructure = viewStructure;
 
-				lazyDefaultPalette.getObject().eventually(LoopedInPromise.response(
-					new VoidResponse<>(this::setNowPlayingColors), messageHandler.getObject()));
-				loadingProgressBar.findView().setVisibility(View.VISIBLE);
-				nowPlayingImageViewFinder.findView().setVisibility(View.INVISIBLE);
-
 				setNowPlayingImage(localViewStructure, serviceFile);
 
 				if (localViewStructure.fileProperties != null) {
@@ -488,6 +482,9 @@ public class NowPlayingActivity extends AppCompatActivity {
 		loadingProgressBar.findView().setVisibility(View.VISIBLE);
 		nowPlayingImage.setVisibility(View.INVISIBLE);
 
+		final Promise<Void> promiseDefaultColors = lazyDefaultPalette.getObject()
+			.eventually(LoopedInPromise.response(new VoidResponse<>(this::setNowPlayingColors), messageHandler.getObject()));
+
 		if (viewStructure.promisedNowPlayingImage == null) {
 			viewStructure.promisedNowPlayingImage =
 				lazyImageProvider.getObject()
@@ -498,7 +495,7 @@ public class NowPlayingActivity extends AppCompatActivity {
 							.then(p -> new StyleBitmapPair(p, b))));
 		}
 
-		viewStructure.promisedNowPlayingImage
+		promiseDefaultColors.eventually(v -> viewStructure.promisedNowPlayingImage)
 			.eventually(LoopedInPromise.response(new VoidResponse<>(styleBitmapPair -> {
 				if (viewStructure != NowPlayingActivity.viewStructure) return;
 
