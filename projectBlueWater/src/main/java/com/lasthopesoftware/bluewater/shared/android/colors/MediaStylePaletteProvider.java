@@ -14,7 +14,7 @@
  * limitations under the License
  */
 
-package com.lasthopesoftware.bluewater.shared.android.notification;
+package com.lasthopesoftware.bluewater.shared.android.colors;
 
 import android.content.Context;
 import android.graphics.Bitmap;

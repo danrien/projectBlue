@@ -1,4 +1,4 @@
-package com.lasthopesoftware.bluewater.shared.android.notification;
+package com.lasthopesoftware.bluewater.shared.android.colors;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.FloatRange;

@@ -1,6 +1,11 @@
 package com.lasthopesoftware.bluewater.client.library.items.media.files.nowplaying.activity;
 
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
 import android.os.Build;
@@ -9,10 +14,17 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.*;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
+import android.widget.ProgressBar;
+import android.widget.RatingBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import com.lasthopesoftware.bluewater.R;
 import com.lasthopesoftware.bluewater.client.connection.ConnectionLostExceptionFilter;
 import com.lasthopesoftware.bluewater.client.connection.polling.PollConnectionService;
@@ -25,6 +37,7 @@ import com.lasthopesoftware.bluewater.client.library.items.media.files.ServiceFi
 import com.lasthopesoftware.bluewater.client.library.items.media.files.cached.disk.AndroidDiskCacheDirectoryProvider;
 import com.lasthopesoftware.bluewater.client.library.items.media.files.nowplaying.list.NowPlayingFilesListActivity;
 import com.lasthopesoftware.bluewater.client.library.items.media.files.nowplaying.storage.INowPlayingRepository;
+import com.lasthopesoftware.bluewater.client.library.items.media.files.nowplaying.storage.NowPlaying;
 import com.lasthopesoftware.bluewater.client.library.items.media.files.nowplaying.storage.NowPlayingRepository;
 import com.lasthopesoftware.bluewater.client.library.items.media.files.properties.CachedFilePropertiesProvider;
 import com.lasthopesoftware.bluewater.client.library.items.media.files.properties.FilePropertiesProvider;
@@ -38,6 +51,8 @@ import com.lasthopesoftware.bluewater.client.playback.service.broadcasters.Track
 import com.lasthopesoftware.bluewater.client.servers.selection.SelectedBrowserLibraryIdentifierProvider;
 import com.lasthopesoftware.bluewater.shared.GenericBinder;
 import com.lasthopesoftware.bluewater.shared.UrlKeyHolder;
+import com.lasthopesoftware.bluewater.shared.android.colors.MediaStylePalette;
+import com.lasthopesoftware.bluewater.shared.android.colors.MediaStylePaletteProvider;
 import com.lasthopesoftware.bluewater.shared.android.view.LazyViewFinder;
 import com.lasthopesoftware.bluewater.shared.android.view.ViewUtils;
 import com.lasthopesoftware.bluewater.shared.exceptions.UnexpectedExceptionToaster;
@@ -49,6 +64,7 @@ import com.namehillsoftware.handoff.promises.response.VoidResponse;
 import com.namehillsoftware.lazyj.AbstractSynchronousLazy;
 import com.namehillsoftware.lazyj.CreateAndHold;
 import com.namehillsoftware.lazyj.Lazy;
+
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
@@ -164,6 +180,8 @@ public class NowPlayingActivity extends AppCompatActivity {
 		}
 	};
 
+	private final Lazy<MediaStylePaletteProvider> lazyMediaStyleProvider = new Lazy<>(() -> new MediaStylePaletteProvider(this));
+
 	private TimerTask timerTask;
 
 	private LocalBroadcastManager localBroadcastManager;
@@ -229,7 +247,7 @@ public class NowPlayingActivity extends AppCompatActivity {
 			shuffleButton.setOnClickListener(v ->
 				lazyNowPlayingRepository.getObject()
 					.getNowPlaying()
-					.eventually(LoopedInPromise.response(result -> {
+					.eventually(LoopedInPromise.<NowPlaying, NowPlaying>response(result -> {
 						final boolean isRepeating = !result.isRepeating;
 						if (isRepeating)
 							PlaybackService.setRepeating(v.getContext());
@@ -412,8 +430,7 @@ public class NowPlayingActivity extends AppCompatActivity {
 
 				final FilePropertiesProvider filePropertiesProvider =
 					new FilePropertiesProvider(connectionProvider, FilePropertyCache.getInstance(), ParsingScheduler.instance());
-				filePropertiesProvider
-					.promiseFileProperties(serviceFile)
+				filePropertiesProvider.promiseFileProperties(serviceFile)
 					.eventually(LoopedInPromise.response(fileProperties -> {
 						localViewStructure.fileProperties = fileProperties;
 						setFileProperties(serviceFile, initialFilePosition, fileProperties);
@@ -431,11 +448,23 @@ public class NowPlayingActivity extends AppCompatActivity {
 
 		if (viewStructure.promisedNowPlayingImage == null) {
 			viewStructure.promisedNowPlayingImage =
-				lazyImageProvider.getObject().eventually(provider -> provider.promiseFileBitmap(serviceFile));
+				lazyImageProvider.getObject()
+					.eventually(provider -> provider
+						.promiseFileBitmap(serviceFile)
+						.eventually(b -> lazyMediaStyleProvider.getObject()
+							.promisePalette(b)
+							.then(p -> new StyleBitmapPair(p, b))));
 		}
 
+		final Promise<StyleBitmapPair> promisedNowPlayingImage = viewStructure.promisedNowPlayingImage;
+
 		viewStructure.promisedNowPlayingImage
-			.eventually(bitmap -> new LoopedInPromise<>(() -> setNowPlayingImage(bitmap), messageHandler.getObject()))
+			.eventually(LoopedInPromise.response(new VoidResponse<>(styleBitmapPair -> {
+				if (promisedNowPlayingImage != viewStructure.promisedNowPlayingImage) return;
+
+				setNowPlayingImage(styleBitmapPair.bitmap);
+				setNowPlayingColors(styleBitmapPair.mediaStylePalette);
+			}), messageHandler.getObject()))
 			.excuse(new VoidResponse<>(e -> {
 				if (e instanceof CancellationException) {
 					logger.info("Bitmap retrieval cancelled", e);
@@ -446,14 +475,26 @@ public class NowPlayingActivity extends AppCompatActivity {
 			}));
 	}
 
-	private Void setNowPlayingImage(Bitmap bitmap) {
+	private void setNowPlayingImage(Bitmap bitmap) {
 		nowPlayingImageViewFinder.findView().setImageBitmap(bitmap);
 
 		loadingProgressBar.findView().setVisibility(View.INVISIBLE);
 		if (bitmap != null)
 			displayImageBitmap();
+	}
 
-		return null;
+	private void setNowPlayingColors(MediaStylePalette mediaStylePalette) {
+		final int primaryTextColor = mediaStylePalette.getPrimaryTextColor();
+		nowPlayingArtist.findView().setTextColor(primaryTextColor);
+		nowPlayingTitle.findView().setTextColor(primaryTextColor);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			songRating.findView().getProgressDrawable().setTint(primaryTextColor);
+			songProgressBar.findView().getProgressDrawable().setTint(primaryTextColor);
+		}
+		else {
+			songRating.findView().getProgressDrawable().setColorFilter(primaryTextColor, PorterDuff.Mode.SRC_ATOP);
+			songProgressBar.findView().getProgressDrawable().setColorFilter(primaryTextColor, PorterDuff.Mode.SRC_ATOP);
+		}
 	}
 
 	private void setFileProperties(final ServiceFile serviceFile, final long initialFilePosition, Map<String, String> fileProperties) {
@@ -464,26 +505,28 @@ public class NowPlayingActivity extends AppCompatActivity {
 		nowPlayingTitle.findView().setText(title);
 		nowPlayingTitle.findView().setSelected(true);
 
-		Float fileRating = null;
-		final String stringRating = fileProperties.get(FilePropertiesProvider.RATING);
-		try {
-			if (stringRating != null && !stringRating.isEmpty())
-				fileRating = Float.valueOf(stringRating);
-		} catch (NumberFormatException e) {
-			logger.info("Failed to parse rating", e);
-		}
-
-		setFileRating(serviceFile, fileRating);
-
 		final int duration = FilePropertyHelpers.parseDurationIntoMilliseconds(fileProperties);
 
 		setTrackDuration(duration > 0 ? duration : 100);
 		setTrackProgress(initialFilePosition);
+
+		final String stringRating = fileProperties.get(FilePropertiesProvider.RATING);
+		try {
+			if (stringRating != null && !stringRating.isEmpty()) {
+				final float fileRating = Float.valueOf(stringRating);
+				setFileRating(serviceFile, fileRating);
+				return;
+			}
+		} catch (NumberFormatException e) {
+			logger.info("Failed to parse rating", e);
+		}
+
+		setFileRating(serviceFile, 0f);
 	}
 
-	private void setFileRating(ServiceFile serviceFile, Float rating) {
+	private void setFileRating(ServiceFile serviceFile, float rating) {
 		final RatingBar songRatingBar = songRating.findView();
-		songRatingBar.setRating(rating != null ? rating : 0f);
+		songRatingBar.setRating(rating);
 
 		songRatingBar.setOnRatingBarChangeListener((ratingBar, newRating, fromUser) -> {
 			if (!fromUser || !nowPlayingToggledVisibilityControls.getObject().isVisible())
@@ -600,7 +643,7 @@ public class NowPlayingActivity extends AppCompatActivity {
 		final UrlKeyHolder<Integer> urlKeyHolder;
 		final ServiceFile serviceFile;
 		Map<String, String> fileProperties;
-		Promise<Bitmap> promisedNowPlayingImage;
+		Promise<StyleBitmapPair> promisedNowPlayingImage;
 		long filePosition;
 		long fileDuration;
 
@@ -612,6 +655,16 @@ public class NowPlayingActivity extends AppCompatActivity {
 		void release() {
 			if (promisedNowPlayingImage != null)
 				promisedNowPlayingImage.cancel();
+		}
+	}
+
+	private static class StyleBitmapPair {
+		final MediaStylePalette mediaStylePalette;
+		final Bitmap bitmap;
+
+		private StyleBitmapPair(MediaStylePalette mediaStylePalette, Bitmap bitmap) {
+			this.mediaStylePalette = mediaStylePalette;
+			this.bitmap = bitmap;
 		}
 	}
 }

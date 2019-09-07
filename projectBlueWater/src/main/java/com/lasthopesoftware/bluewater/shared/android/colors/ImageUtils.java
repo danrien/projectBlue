@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License
  */
-package com.lasthopesoftware.bluewater.shared.android.notification;
+package com.lasthopesoftware.bluewater.shared.android.colors;
 
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
