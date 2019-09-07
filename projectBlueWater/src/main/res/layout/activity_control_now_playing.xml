@@ -59,6 +59,7 @@
 			android:orientation="vertical"
 			android:layout_toStartOf="@id/menuControlsLinearLayout"
 			android:layout_toLeftOf="@id/menuControlsLinearLayout">
+
 			<TextView
 				android:id="@+id/tvSongTitle"
 				android:layout_width="wrap_content"
@@ -68,7 +69,8 @@
 				android:singleLine="true"
 				android:text="@string/lbl_song_title"
 				android:textAppearance="?android:attr/textAppearanceLarge"
-				android:textColor="@color/white" />
+				android:textColor="@color/white"
+				android:textStyle="bold" />
 
 			<TextView
 				android:id="@+id/tvSongArtist"
