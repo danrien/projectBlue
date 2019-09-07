@@ -92,10 +92,11 @@ def getGeneratedVersionCode() {
 dependencies {
     implementation project(':pagerslidingtabstrip')
     implementation project(':futures')
-    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
 	implementation 'androidx.multidex:multidex:2.0.1'
 	implementation "androidx.work:work-runtime:2.2.0"
-	implementation "androidx.media:media:1.0.1"
+	implementation "androidx.media:media:1.1.0"
+	implementation "androidx.palette:palette:1.0.0"
 	implementation "androidx.drawerlayout:drawerlayout:1.0.0"
 	implementation 'com.google.android.material:material:1.0.0'
 	implementation 'androidx.legacy:legacy-support-v4:1.0.0'
