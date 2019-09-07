@@ -110,16 +110,20 @@ public class NowPlayingActivity extends AppCompatActivity {
 	private final LazyViewFinder<RelativeLayout> nowPlayingLayout = new LazyViewFinder<>(this, R.id.rlCtlNowPlaying);
 	private final LazyViewFinder<ImageButton> viewNowPlayingListButton = new LazyViewFinder<>(this, R.id.viewNowPlayingListButton);
 	private final LazyViewFinder<ImageButton> shuffleButton = new LazyViewFinder<>(this, R.id.repeatButton);
+	private final Lazy<Drawable> playButtonDrawable = new Lazy<>(() -> playButton.findView().getDrawable().getConstantState().newDrawable());
+	private final Lazy<Drawable> pauseButtonDrawable = new Lazy<>(() -> pauseButton.findView().getDrawable().getConstantState().newDrawable());
+	private final Lazy<Drawable> nextButtonDrawable = new Lazy<>(() -> nextButton.findView().getDrawable().getConstantState().newDrawable());
+	private final Lazy<Drawable> previousButtonDrawable = new Lazy<>(() -> previousButton.findView().getDrawable().getConstantState().newDrawable());
 	private final Lazy<Drawable> repeatDrawable = new Lazy<>(() -> ContextCompat.getDrawable(this, R.drawable.av_repeat_dark));
 	private final Lazy<Drawable> shuffleDrawable = new Lazy<>(() -> ContextCompat.getDrawable(this, R.drawable.av_no_repeat_dark));
 	private final Lazy<Drawable> screenOnDrawable = new Lazy<>(() -> ContextCompat.getDrawable(this, R.drawable.screen_on));
 	private final Lazy<Drawable> screenOffDrawable = new Lazy<>(() -> ContextCompat.getDrawable(this, R.drawable.screen_off));
 
 	private final Lazy<Drawable[]> tintableDrawables = new Lazy<>(() -> new Drawable[] {
-		playButton.findView().getDrawable(),
-		pauseButton.findView().getDrawable(),
-		nextButton.findView().getDrawable(),
-		previousButton.findView().getDrawable(),
+		playButtonDrawable.getObject(),
+		pauseButtonDrawable.getObject(),
+		nextButtonDrawable.getObject(),
+		previousButtonDrawable.getObject(),
 		songRating.findView().getProgressDrawable(),
 		songProgressBar.findView().getProgressDrawable(),
 		viewNowPlayingListButton.findView().getDrawable(),
@@ -247,13 +251,15 @@ public class NowPlayingActivity extends AppCompatActivity {
 
 		setNowPlayingBackgroundBitmap();
 
+		playButton.findView().setImageDrawable(playButtonDrawable.getObject());
 		playButton.findView().setOnClickListener(v -> {
 			if (!nowPlayingToggledVisibilityControls.getObject().isVisible()) return;
 			PlaybackService.play(v.getContext());
 			playButton.findView().setVisibility(View.INVISIBLE);
 			pauseButton.findView().setVisibility(View.VISIBLE);
 		});
-		
+
+		pauseButton.findView().setImageDrawable(pauseButtonDrawable.getObject());
 		pauseButton.findView().setOnClickListener(v -> {
 			if (!nowPlayingToggledVisibilityControls.getObject().isVisible()) return;
 			PlaybackService.pause(v.getContext());
@@ -261,11 +267,13 @@ public class NowPlayingActivity extends AppCompatActivity {
 			pauseButton.findView().setVisibility(View.INVISIBLE);
 		});
 
+		nextButton.findView().setImageDrawable(nextButtonDrawable.getObject());
 		nextButton.findView().setOnClickListener(v -> {
 			if (!nowPlayingToggledVisibilityControls.getObject().isVisible()) return;
 			PlaybackService.next(v.getContext());
 		});
 
+		previousButton.findView().setImageDrawable(previousButtonDrawable.getObject());
 		previousButton.findView().setOnClickListener(v -> {
 			if (!nowPlayingToggledVisibilityControls.getObject().isVisible()) return;
 			PlaybackService.previous(v.getContext());
