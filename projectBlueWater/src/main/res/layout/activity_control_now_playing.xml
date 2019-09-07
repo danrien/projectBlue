@@ -83,81 +83,81 @@
 		</LinearLayout>
 	</RelativeLayout>
 
-    <RatingBar
-	    android:id="@+id/rbSongRating"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-	    android:layout_above="@+id/llNpButtons"
-	    android:layout_centerHorizontal="true"
-	    android:layout_marginBottom="44dp"
-	    android:max="5"
-	    android:rating="0"
-	    android:stepSize="1" />
+		<RatingBar
+			android:id="@+id/rbSongRating"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_above="@+id/llNpButtons"
+			android:layout_centerHorizontal="true"
+			android:layout_marginBottom="44dp"
+			android:max="5"
+			android:rating="0"
+			android:stepSize="1" />
 
-	<ProgressBar
-		android:id="@+id/pbNowPlaying"
-		style="?android:attr/progressBarStyleHorizontal"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:layout_above="@+id/llNpButtons"
-		android:layout_alignParentLeft="true"
-		android:layout_alignParentStart="true"
-		android:layout_marginBottom="20dp"
-		android:indeterminate="false"
-		android:max="100" />
+		<ProgressBar
+			android:id="@+id/pbNowPlaying"
+			style="?android:attr/progressBarStyleHorizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_above="@+id/llNpButtons"
+			android:layout_alignParentLeft="true"
+			android:layout_alignParentStart="true"
+			android:layout_marginBottom="20dp"
+			android:indeterminate="false"
+			android:max="100" />
 
 	<LinearLayout
-	    android:id="@+id/llNpButtons"
-	    android:layout_width="match_parent"
-	    android:layout_height="wrap_content"
-	    android:layout_alignParentBottom="true"
-	    android:layout_alignParentLeft="true"
+		android:id="@+id/llNpButtons"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignParentBottom="true"
+		android:layout_alignParentLeft="true"
 		android:layout_alignParentStart="true"
-	    android:orientation="horizontal"
-	    android:paddingLeft="2dip"
-	    android:paddingRight="2dip" >
+		android:orientation="horizontal"
+		android:paddingLeft="2dip"
+		android:paddingRight="2dip" >
 
-	    <ImageButton
-	        android:id="@+id/btnPrevious"
-	        android:layout_width="0dip"
-	        android:layout_weight="1"
-	        android:layout_height="wrap_content"
-	        android:background="?android:attr/selectableItemBackground"
-	        android:contentDescription="@string/btn_previous"
-	        android:src="@drawable/av_rewind_dark"
-	        android:layout_marginBottom="20dp" />
+		<ImageButton
+			android:id="@+id/btnPrevious"
+			android:layout_width="0dip"
+			android:layout_weight="1"
+			android:layout_height="wrap_content"
+			android:background="?android:attr/selectableItemBackground"
+			android:contentDescription="@string/btn_previous"
+			android:src="@drawable/av_rewind_dark"
+			android:layout_marginBottom="20dp" />
 
-	    <ViewFlipper 
-	        android:layout_width="0dip"
-		    android:layout_weight="1"
-		    android:layout_height="wrap_content"
-		    android:id="@+id/vfPlayPause">
-		    
-		    <ImageButton
-		        android:id="@+id/btnPlay"
-		        android:layout_width="match_parent"
-		        android:layout_height="wrap_content"
-		        android:background="?android:attr/selectableItemBackground"
-		        android:contentDescription="@string/btn_play"
-		        android:src="@drawable/av_play_dark" />
-	
-		    <ImageButton
-		        android:id="@+id/btnPause"
-		        android:layout_width="match_parent"
-		        android:layout_height="wrap_content"
-		        android:background="?android:attr/selectableItemBackground"
-		        android:contentDescription="@string/btn_pause"
-		        android:src="@drawable/av_pause_dark" />
-	    </ViewFlipper>
+		<ViewFlipper
+			android:layout_width="0dip"
+			android:layout_weight="1"
+			android:layout_height="wrap_content"
+			android:id="@+id/vfPlayPause">
 
-	    <ImageButton
-	        android:id="@+id/btnNext"
-	        android:layout_width="0dip"
-	        android:layout_weight="1"
-	        android:layout_height="wrap_content"
-	        android:background="?android:attr/selectableItemBackground"
-	        android:contentDescription="@string/btn_next"
-	        android:src="@drawable/av_fast_forward_dark" />
+			<ImageButton
+				android:id="@+id/btnPlay"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:background="?android:attr/selectableItemBackground"
+				android:contentDescription="@string/btn_play"
+				android:src="@drawable/av_play_dark" />
+
+			<ImageButton
+				android:id="@+id/btnPause"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:background="?android:attr/selectableItemBackground"
+				android:contentDescription="@string/btn_pause"
+				android:src="@drawable/av_pause_dark" />
+		</ViewFlipper>
+
+		<ImageButton
+			android:id="@+id/btnNext"
+			android:layout_width="0dip"
+			android:layout_weight="1"
+			android:layout_height="wrap_content"
+			android:background="?android:attr/selectableItemBackground"
+			android:contentDescription="@string/btn_next"
+			android:src="@drawable/av_fast_forward_dark" />
 	</LinearLayout>
-    
+
 </RelativeLayout>

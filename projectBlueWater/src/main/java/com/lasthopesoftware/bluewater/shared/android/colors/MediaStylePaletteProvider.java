@@ -388,7 +388,7 @@ public class MediaStylePaletteProvider {
 			}
 		}
 
-		return new MediaStylePalette(primaryTextColor, secondaryTextColor, backgroundColor);
+		return new MediaStylePalette(primaryTextColor, secondaryTextColor, backgroundColor, NotificationColorUtil.resolveActionBarColor(context, backgroundColor));
 	}
 
 	private static class RgbAndHsl {

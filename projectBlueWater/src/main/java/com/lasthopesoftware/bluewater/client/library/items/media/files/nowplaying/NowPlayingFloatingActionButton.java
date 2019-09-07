@@ -6,7 +6,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
+
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.lasthopesoftware.bluewater.R;
 import com.lasthopesoftware.bluewater.client.library.items.media.files.nowplaying.activity.NowPlayingActivity;
@@ -35,7 +38,7 @@ public class NowPlayingFloatingActionButton extends FloatingActionButton {
     private NowPlayingFloatingActionButton(Context context) {
         super(context);
 
-        setImageDrawable(ViewUtils.getDrawable(context, R.drawable.av_play_dark));
+        setImageDrawable(ContextCompat.getDrawable(context, R.drawable.av_play_dark));
 
         initializeNowPlayingFloatingActionButton();
     }

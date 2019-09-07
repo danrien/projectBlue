@@ -24,6 +24,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.ColorUtils;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.lasthopesoftware.bluewater.R;
@@ -93,6 +96,8 @@ public class NowPlayingActivity extends AppCompatActivity {
 
 	private final LazyViewFinder<ImageButton> playButton = new LazyViewFinder<>(this, R.id.btnPlay);
 	private final LazyViewFinder<ImageButton> pauseButton = new LazyViewFinder<>(this, R.id.btnPause);
+	private final LazyViewFinder<ImageButton> nextButton = new LazyViewFinder<>(this, R.id.btnNext);
+	private final LazyViewFinder<ImageButton> previousButton = new LazyViewFinder<>(this, R.id.btnPrevious);
 	private final LazyViewFinder<RatingBar> songRating = new LazyViewFinder<>(this, R.id.rbSongRating);
 	private final LazyViewFinder<RelativeLayout> contentView = new LazyViewFinder<>(this, R.id.viewNowPlayingRelativeLayout);
 	private final LazyViewFinder<ProgressBar> songProgressBar = new LazyViewFinder<>(this, R.id.pbNowPlaying);
@@ -102,6 +107,28 @@ public class NowPlayingActivity extends AppCompatActivity {
 	private final LazyViewFinder<TextView> nowPlayingTitle = new LazyViewFinder<>(this, R.id.tvSongTitle);
 	private final LazyViewFinder<ImageView> nowPlayingImageLoading = new LazyViewFinder<>(this, R.id.imgNowPlayingLoading);
 	private final LazyViewFinder<ProgressBar> loadingProgressBar = new LazyViewFinder<>(this, R.id.pbLoadingImg);
+	private final LazyViewFinder<RelativeLayout> nowPlayingLayout = new LazyViewFinder<>(this, R.id.rlCtlNowPlaying);
+	private final LazyViewFinder<ImageButton> viewNowPlayingListButton = new LazyViewFinder<>(this, R.id.viewNowPlayingListButton);
+	private final LazyViewFinder<ImageButton> shuffleButton = new LazyViewFinder<>(this, R.id.repeatButton);
+	private final Lazy<Drawable> repeatDrawable = new Lazy<>(() -> ContextCompat.getDrawable(this, R.drawable.av_repeat_dark));
+	private final Lazy<Drawable> shuffleDrawable = new Lazy<>(() -> ContextCompat.getDrawable(this, R.drawable.av_no_repeat_dark));
+	private final Lazy<Drawable> screenOnDrawable = new Lazy<>(() -> ContextCompat.getDrawable(this, R.drawable.screen_on));
+	private final Lazy<Drawable> screenOffDrawable = new Lazy<>(() -> ContextCompat.getDrawable(this, R.drawable.screen_off));
+
+	private final Lazy<Drawable[]> tintableDrawables = new Lazy<>(() -> new Drawable[] {
+		playButton.findView().getDrawable(),
+		pauseButton.findView().getDrawable(),
+		nextButton.findView().getDrawable(),
+		previousButton.findView().getDrawable(),
+		songRating.findView().getProgressDrawable(),
+		songProgressBar.findView().getProgressDrawable(),
+		viewNowPlayingListButton.findView().getDrawable(),
+		repeatDrawable.getObject(),
+		shuffleDrawable.getObject(),
+		screenOnDrawable.getObject(),
+		screenOffDrawable.getObject()
+	});
+
 	private final CreateAndHold<NowPlayingToggledVisibilityControls> nowPlayingToggledVisibilityControls = new AbstractSynchronousLazy<NowPlayingToggledVisibilityControls>() {
 		@Override
 		protected NowPlayingToggledVisibilityControls create() {
@@ -234,45 +261,34 @@ public class NowPlayingActivity extends AppCompatActivity {
 			pauseButton.findView().setVisibility(View.INVISIBLE);
 		});
 
-		final ImageButton next = findViewById(R.id.btnNext);
-		if (next != null) {
-			next.setOnClickListener(v -> {
-				if (!nowPlayingToggledVisibilityControls.getObject().isVisible()) return;
-				PlaybackService.next(v.getContext());
-			});
-		}
+		nextButton.findView().setOnClickListener(v -> {
+			if (!nowPlayingToggledVisibilityControls.getObject().isVisible()) return;
+			PlaybackService.next(v.getContext());
+		});
 
-		final ImageButton previous = findViewById(R.id.btnPrevious);
-		if (previous != null) {
-			previous.setOnClickListener(v -> {
-				if (!nowPlayingToggledVisibilityControls.getObject().isVisible()) return;
-				PlaybackService.previous(v.getContext());
-			});
-		}
+		previousButton.findView().setOnClickListener(v -> {
+			if (!nowPlayingToggledVisibilityControls.getObject().isVisible()) return;
+			PlaybackService.previous(v.getContext());
+		});
 
-		final ImageButton shuffleButton = findViewById(R.id.repeatButton);
-		setRepeatingIcon(shuffleButton);
+		setRepeatingIcon(shuffleButton.findView());
 
-		if (shuffleButton != null) {
-			shuffleButton.setOnClickListener(v ->
-				lazyNowPlayingRepository.getObject()
-					.getNowPlaying()
-					.eventually(LoopedInPromise.<NowPlaying, NowPlaying>response(result -> {
-						final boolean isRepeating = !result.isRepeating;
-						if (isRepeating)
-							PlaybackService.setRepeating(v.getContext());
-						else
-							PlaybackService.setCompleting(v.getContext());
+		shuffleButton.findView().setOnClickListener(v ->
+			lazyNowPlayingRepository.getObject()
+				.getNowPlaying()
+				.eventually(LoopedInPromise.<NowPlaying, NowPlaying>response(result -> {
+					final boolean isRepeating = !result.isRepeating;
+					if (isRepeating)
+						PlaybackService.setRepeating(v.getContext());
+					else
+						PlaybackService.setCompleting(v.getContext());
 
-						setRepeatingIcon(shuffleButton, isRepeating);
+					setRepeatingIcon(shuffleButton.findView(), isRepeating);
 
-						return result;
-					}, messageHandler.getObject())));
-		}
+					return result;
+				}, messageHandler.getObject())));
 
-		final ImageButton viewNowPlayingListButton = findViewById(R.id.viewNowPlayingListButton);
-		if (viewNowPlayingListButton != null)
-			viewNowPlayingListButton.setOnClickListener(v -> startActivity(new Intent(v.getContext(), NowPlayingFilesListActivity.class)));
+		viewNowPlayingListButton.findView().setOnClickListener(v -> startActivity(new Intent(v.getContext(), NowPlayingFilesListActivity.class)));
 
 		isScreenKeptOnButton.findView().setOnClickListener(v -> {
 			isScreenKeptOn = !isScreenKeptOn;
@@ -365,12 +381,18 @@ public class NowPlayingActivity extends AppCompatActivity {
 			}, messageHandler.getObject()));
 	}
 	
-	private static void setRepeatingIcon(final ImageButton imageButton, boolean isRepeating) {
-		imageButton.setImageDrawable(ViewUtils.getDrawable(imageButton.getContext(), isRepeating ? R.drawable.av_repeat_dark : R.drawable.av_no_repeat_dark));
+	private void setRepeatingIcon(final ImageButton imageButton, boolean isRepeating) {
+		imageButton.setImageDrawable(
+			isRepeating
+				? repeatDrawable.getObject()
+				: shuffleDrawable.getObject());
 	}
 
 	private void updateKeepScreenOnStatus() {
-		isScreenKeptOnButton.findView().setImageDrawable(ViewUtils.getDrawable(this, isScreenKeptOn ? R.drawable.screen_on : R.drawable.screen_off));
+		isScreenKeptOnButton.findView().setImageDrawable(
+			isScreenKeptOn
+				? screenOnDrawable.getObject()
+				: screenOffDrawable.getObject());
 
 		if (isScreenKeptOn)
 			getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -424,7 +446,8 @@ public class NowPlayingActivity extends AppCompatActivity {
 
 				final ViewStructure localViewStructure = viewStructure;
 
-				lazyDefaultPalette.getObject().then(new VoidResponse<>(this::setNowPlayingColors));
+				lazyDefaultPalette.getObject().eventually(LoopedInPromise.response(
+					new VoidResponse<>(this::setNowPlayingColors), messageHandler.getObject()));
 				loadingProgressBar.findView().setVisibility(View.VISIBLE);
 				nowPlayingImageViewFinder.findView().setVisibility(View.INVISIBLE);
 
@@ -493,20 +516,15 @@ public class NowPlayingActivity extends AppCompatActivity {
 	}
 
 	private void setNowPlayingColors(MediaStylePalette mediaStylePalette) {
-		final int primaryTextColor = mediaStylePalette.getPrimaryTextColor();
-		nowPlayingArtist.findView().setTextColor(primaryTextColor);
-		nowPlayingTitle.findView().setTextColor(primaryTextColor);
+		final int tintColor = mediaStylePalette.getPrimaryTextColor();
+		nowPlayingArtist.findView().setTextColor(tintColor);
+		nowPlayingTitle.findView().setTextColor(tintColor);
 
-		setDrawableColor(songRating.findView().getProgressDrawable(), primaryTextColor);
-		setDrawableColor(songProgressBar.findView().getProgressDrawable(), primaryTextColor);
-		setDrawableColor(loadingProgressBar.findView().getProgressDrawable(), primaryTextColor);
-	}
+		for (final Drawable drawable : tintableDrawables.getObject()) {
+			DrawableCompat.setTint(drawable, tintColor);
+		}
 
-	private static void setDrawableColor(Drawable drawable, int color) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-			drawable.setTint(color);
-		else
-			drawable.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
+		nowPlayingLayout.findView().setBackgroundColor(ColorUtils.setAlphaComponent(mediaStylePalette.getActionBarColor(), 0x66));
 	}
 
 	private void setFileProperties(final ServiceFile serviceFile, final long initialFilePosition, Map<String, String> fileProperties) {
