@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -181,6 +182,15 @@ public class NowPlayingActivity extends AppCompatActivity {
 	};
 
 	private final Lazy<MediaStylePaletteProvider> lazyMediaStyleProvider = new Lazy<>(() -> new MediaStylePaletteProvider(this));
+
+	private final AbstractSynchronousLazy<Promise<MediaStylePalette>> lazyDefaultPalette = new AbstractSynchronousLazy<Promise<MediaStylePalette>>() {
+		@Override
+		protected Promise<MediaStylePalette> create() {
+			final DefaultImageProvider defaultImageProvider = new DefaultImageProvider(NowPlayingActivity.this);
+			return defaultImageProvider.promiseFileBitmap()
+				.eventually(b -> lazyMediaStyleProvider.getObject().promisePalette(b));
+		}
+	};
 
 	private TimerTask timerTask;
 
@@ -414,10 +424,9 @@ public class NowPlayingActivity extends AppCompatActivity {
 
 				final ViewStructure localViewStructure = viewStructure;
 
-				final ImageView nowPlayingImage = nowPlayingImageViewFinder.findView();
-
+				lazyDefaultPalette.getObject().then(new VoidResponse<>(this::setNowPlayingColors));
 				loadingProgressBar.findView().setVisibility(View.VISIBLE);
-				nowPlayingImage.setVisibility(View.INVISIBLE);
+				nowPlayingImageViewFinder.findView().setVisibility(View.INVISIBLE);
 
 				setNowPlayingImage(localViewStructure, serviceFile);
 
@@ -432,6 +441,8 @@ public class NowPlayingActivity extends AppCompatActivity {
 					new FilePropertiesProvider(connectionProvider, FilePropertyCache.getInstance(), ParsingScheduler.instance());
 				filePropertiesProvider.promiseFileProperties(serviceFile)
 					.eventually(LoopedInPromise.response(fileProperties -> {
+						if (localViewStructure != viewStructure) return null;
+
 						localViewStructure.fileProperties = fileProperties;
 						setFileProperties(serviceFile, initialFilePosition, fileProperties);
 						return null;
@@ -456,11 +467,9 @@ public class NowPlayingActivity extends AppCompatActivity {
 							.then(p -> new StyleBitmapPair(p, b))));
 		}
 
-		final Promise<StyleBitmapPair> promisedNowPlayingImage = viewStructure.promisedNowPlayingImage;
-
 		viewStructure.promisedNowPlayingImage
 			.eventually(LoopedInPromise.response(new VoidResponse<>(styleBitmapPair -> {
-				if (promisedNowPlayingImage != viewStructure.promisedNowPlayingImage) return;
+				if (viewStructure != NowPlayingActivity.viewStructure) return;
 
 				setNowPlayingImage(styleBitmapPair.bitmap);
 				setNowPlayingColors(styleBitmapPair.mediaStylePalette);
@@ -487,14 +496,17 @@ public class NowPlayingActivity extends AppCompatActivity {
 		final int primaryTextColor = mediaStylePalette.getPrimaryTextColor();
 		nowPlayingArtist.findView().setTextColor(primaryTextColor);
 		nowPlayingTitle.findView().setTextColor(primaryTextColor);
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			songRating.findView().getProgressDrawable().setTint(primaryTextColor);
-			songProgressBar.findView().getProgressDrawable().setTint(primaryTextColor);
-		}
-		else {
-			songRating.findView().getProgressDrawable().setColorFilter(primaryTextColor, PorterDuff.Mode.SRC_ATOP);
-			songProgressBar.findView().getProgressDrawable().setColorFilter(primaryTextColor, PorterDuff.Mode.SRC_ATOP);
-		}
+
+		setDrawableColor(songRating.findView().getProgressDrawable(), primaryTextColor);
+		setDrawableColor(songProgressBar.findView().getProgressDrawable(), primaryTextColor);
+		setDrawableColor(loadingProgressBar.findView().getProgressDrawable(), primaryTextColor);
+	}
+
+	private static void setDrawableColor(Drawable drawable, int color) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+			drawable.setTint(color);
+		else
+			drawable.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
 	}
 
 	private void setFileProperties(final ServiceFile serviceFile, final long initialFilePosition, Map<String, String> fileProperties) {
