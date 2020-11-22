@@ -1,2 +1,5 @@
+include ':browsing'
+include ':shared'
+include ':playback'
 include ':futures'
 include ':projectBlueWater'

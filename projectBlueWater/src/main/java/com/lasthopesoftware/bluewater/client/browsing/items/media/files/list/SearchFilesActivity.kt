@@ -31,10 +31,8 @@ import com.lasthopesoftware.bluewater.client.playback.view.nowplaying.NowPlaying
 import com.lasthopesoftware.bluewater.client.playback.view.nowplaying.NowPlayingFloatingActionButton
 import com.lasthopesoftware.bluewater.client.playback.view.nowplaying.NowPlayingFloatingActionButton.Companion.addNowPlayingFloatingActionButton
 import com.lasthopesoftware.bluewater.shared.android.view.LazyViewFinder
-import com.lasthopesoftware.bluewater.shared.android.view.ViewUtils
-import com.lasthopesoftware.bluewater.shared.exceptions.UnexpectedExceptionToasterResponse
-import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise
 import com.namehillsoftware.handoff.promises.response.ImmediateResponse
+import com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise
 
 class SearchFilesActivity : AppCompatActivity(), IItemListViewContainer, ImmediateResponse<List<ServiceFile>?, Unit> {
 	private val pbLoading = LazyViewFinder<ProgressBar>(this, R.id.recyclerLoadingProgress)
@@ -55,7 +53,7 @@ class SearchFilesActivity : AppCompatActivity(), IItemListViewContainer, Immedia
 	}
 
 	override fun onCreateOptionsMenu(menu: Menu): Boolean {
-		return ViewUtils.buildStandardMenu(this, menu)
+		return com.namehillsoftware.projectblue.shared.android.view.ViewUtils.buildStandardMenu(this, menu)
 	}
 
 	override fun onNewIntent(intent: Intent) {
@@ -73,7 +71,7 @@ class SearchFilesActivity : AppCompatActivity(), IItemListViewContainer, Immedia
 		fileListView.findView().visibility = View.VISIBLE
 		pbLoading.findView().visibility = View.INVISIBLE
 
-		val onSearchFilesComplete = LoopedInPromise.response(this, this)
+		val onSearchFilesComplete = com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response(this, this)
 		(object : Runnable {
 			override fun run() {
 				getInstance(this@SearchFilesActivity).promiseSessionConnection()
@@ -85,7 +83,7 @@ class SearchFilesActivity : AppCompatActivity(), IItemListViewContainer, Immedia
 					}
 					.eventually(onSearchFilesComplete)
 					.excuse(HandleViewIoException(this@SearchFilesActivity, this))
-					.eventuallyExcuse(LoopedInPromise.response(UnexpectedExceptionToasterResponse(this@SearchFilesActivity), this@SearchFilesActivity))
+					.eventuallyExcuse(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response(com.namehillsoftware.projectblue.shared.exceptions.UnexpectedExceptionToasterResponse(this@SearchFilesActivity), this@SearchFilesActivity))
 					.then { finish() }
 			}
 		}).apply {

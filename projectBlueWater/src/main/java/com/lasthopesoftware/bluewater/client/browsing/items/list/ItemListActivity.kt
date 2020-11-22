@@ -12,7 +12,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.lasthopesoftware.bluewater.R
 import com.lasthopesoftware.bluewater.client.browsing.items.Item
 import com.lasthopesoftware.bluewater.client.browsing.items.access.ItemProvider
-import com.lasthopesoftware.bluewater.client.browsing.items.list.ItemListActivity
 import com.lasthopesoftware.bluewater.client.browsing.items.list.menus.changes.handlers.ItemListMenuChangeHandler
 import com.lasthopesoftware.bluewater.client.browsing.items.media.files.access.parameters.FileListParameters
 import com.lasthopesoftware.bluewater.client.browsing.items.menu.LongClickViewAnimatorListener
@@ -28,13 +27,11 @@ import com.lasthopesoftware.bluewater.client.playback.view.nowplaying.NowPlaying
 import com.lasthopesoftware.bluewater.client.stored.library.items.StoredItemAccess
 import com.lasthopesoftware.bluewater.shared.MagicPropertyBuilder
 import com.lasthopesoftware.bluewater.shared.android.view.LazyViewFinder
-import com.lasthopesoftware.bluewater.shared.android.view.ViewUtils
-import com.lasthopesoftware.bluewater.shared.exceptions.UnexpectedExceptionToasterResponse
-import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise
 import com.namehillsoftware.handoff.promises.response.ImmediateResponse
+import com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise
 
 class ItemListActivity : AppCompatActivity(), IItemListViewContainer, ImmediateResponse<List<Item>?, Unit> {
-	private val itemProviderComplete = lazy { LoopedInPromise.response(this, this) }
+	private val itemProviderComplete = lazy { com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response(this, this) }
 	private val itemListView = LazyViewFinder<ListView>(this, R.id.lvItems)
 	private val pbLoading = LazyViewFinder<ProgressBar>(this, R.id.pbLoadingItems)
 	private val lazySpecificLibraryProvider = lazy {
@@ -80,7 +77,7 @@ class ItemListActivity : AppCompatActivity(), IItemListViewContainer, ImmediateR
 			}
 			.eventually(itemProviderComplete.value)
 			.excuse(HandleViewIoException(this) { hydrateItems() })
-			.eventuallyExcuse(LoopedInPromise.response(UnexpectedExceptionToasterResponse(this), this))
+			.eventuallyExcuse(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response(com.namehillsoftware.projectblue.shared.exceptions.UnexpectedExceptionToasterResponse(this), this))
 			.then { finish() }
 	}
 
@@ -90,7 +87,7 @@ class ItemListActivity : AppCompatActivity(), IItemListViewContainer, ImmediateR
 
 	private fun buildItemListView(items: List<Item>) {
 		lazySpecificLibraryProvider.value.browserLibrary
-			.eventually(LoopedInPromise.response({ library ->
+			.eventually(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response({ library ->
 				val storedItemAccess = StoredItemAccess(this)
 				val itemListAdapter = ItemListAdapter(
 					this,
@@ -120,11 +117,11 @@ class ItemListActivity : AppCompatActivity(), IItemListViewContainer, ImmediateR
 	}
 
 	override fun onCreateOptionsMenu(menu: Menu): Boolean {
-		return ViewUtils.buildStandardMenu(this, menu)
+		return com.namehillsoftware.projectblue.shared.android.view.ViewUtils.buildStandardMenu(this, menu)
 	}
 
 	override fun onOptionsItemSelected(item: MenuItem): Boolean {
-		return ViewUtils.handleNavMenuClicks(this, item) || super.onOptionsItemSelected(item)
+		return com.namehillsoftware.projectblue.shared.android.view.ViewUtils.handleNavMenuClicks(this, item) || super.onOptionsItemSelected(item)
 	}
 
 	override fun onBackPressed() {

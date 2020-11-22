@@ -4,8 +4,8 @@ import com.lasthopesoftware.bluewater.client.browsing.items.Item
 import com.lasthopesoftware.bluewater.client.browsing.items.access.ProvideItems
 import com.lasthopesoftware.bluewater.client.browsing.library.views.KnownViews
 import com.lasthopesoftware.bluewater.client.browsing.library.views.access.ProvideLibraryViews
-import com.lasthopesoftware.bluewater.shared.promises.extensions.toPromise
 import com.namehillsoftware.handoff.promises.Promise
+import com.namehillsoftware.projectblue.shared.promises.extensions.toPromise
 
 class PlaylistItemFinder(private val libraryViews: ProvideLibraryViews, private val itemProvider: ProvideItems) : FindPlaylistItem {
 	override fun promiseItem(playlist: Playlist): Promise<Item?> = libraryViews.promiseLibraryViews()

@@ -2,9 +2,11 @@ package com.lasthopesoftware.bluewater.client.playback.engine.selection.broadcas
 
 import android.content.Context;
 import android.content.Intent;
+
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import com.lasthopesoftware.bluewater.client.playback.engine.selection.PlaybackEngineType;
-import com.lasthopesoftware.bluewater.shared.MagicPropertyBuilder;
+import com.namehillsoftware.projectblue.shared.MagicPropertyBuilder;
 
 public class PlaybackEngineTypeChangedBroadcaster {
 

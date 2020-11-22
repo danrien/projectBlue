@@ -15,7 +15,6 @@ import com.lasthopesoftware.bluewater.R
 import com.lasthopesoftware.bluewater.client.connection.IConnectionProvider
 import com.lasthopesoftware.bluewater.client.connection.session.SessionConnection.Companion.getInstance
 import com.lasthopesoftware.bluewater.client.playback.service.notification.NotificationsConfiguration
-import com.lasthopesoftware.bluewater.shared.GenericBinder
 import com.lasthopesoftware.bluewater.shared.MagicPropertyBuilder
 import com.lasthopesoftware.resources.notifications.NoOpChannelActivator
 import com.lasthopesoftware.resources.notifications.control.NotificationsController
@@ -45,7 +44,7 @@ class PollConnectionService : Service(), MessengerOperator<IConnectionProvider> 
 					override fun onServiceConnected(name: ComponentName, service: IBinder) {
 						m.sendResolution(
 							PollConnectionServiceConnectionHolder(
-								(service as GenericBinder<*>).service as PollConnectionService,
+								(service as com.namehillsoftware.projectblue.shared.GenericBinder<*>).service as PollConnectionService,
 								this))
 					}
 
@@ -55,8 +54,8 @@ class PollConnectionService : Service(), MessengerOperator<IConnectionProvider> 
 
 			return promiseConnectedService
 				.eventually { s ->
-					val connectionService = s.pollConnectionService;
-					connectionService.withNotification = connectionService.withNotification || withNotification
+					val connectionService = s.pollConnectionService
+                    connectionService.withNotification = connectionService.withNotification || withNotification
 					connectionService.lazyConnectionPoller.getObject()
 						.must { context.unbindService(s.serviceConnection) }
 				}
@@ -84,7 +83,7 @@ class PollConnectionService : Service(), MessengerOperator<IConnectionProvider> 
 	private var withNotification = false
 
 	private val notificationId = 99
-	private val lazyBinder = Lazy { GenericBinder(this) }
+	private val lazyBinder = Lazy { com.namehillsoftware.projectblue.shared.GenericBinder(this) }
 	private val lazyHandler = Lazy { Handler(mainLooper) }
 
 	private val lazyConnectionPoller: CreateAndHold<Promise<IConnectionProvider>> = Lazy {

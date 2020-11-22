@@ -11,12 +11,12 @@ import com.lasthopesoftware.bluewater.client.browsing.items.media.image.GetRawIm
 import com.lasthopesoftware.bluewater.client.browsing.items.media.image.RemoteImageAccess
 import com.lasthopesoftware.bluewater.client.browsing.library.repository.LibraryId
 import com.lasthopesoftware.bluewater.client.connection.libraries.LibraryConnectionProvider
-import com.lasthopesoftware.bluewater.shared.promises.extensions.toPromise
 import com.namehillsoftware.handoff.Messenger
 import com.namehillsoftware.handoff.promises.MessengerOperator
 import com.namehillsoftware.handoff.promises.Promise
 import com.namehillsoftware.handoff.promises.propagation.CancellationProxy
 import com.namehillsoftware.handoff.promises.propagation.PromiseProxy
+import com.namehillsoftware.projectblue.shared.promises.extensions.toPromise
 
 class MemoryCachedImageAccess(private val sourceImages: GetRawImages, private val imageCacheKeys: LookupImageCacheKey) : GetRawImages {
 
@@ -61,9 +61,9 @@ class MemoryCachedImageAccess(private val sourceImages: GetRawImages, private va
 
 	inner class ImageOperator internal constructor(private val libraryId: LibraryId, private val serviceFile: ServiceFile) : MessengerOperator<ByteArray> {
 		override fun send(messenger: Messenger<ByteArray>) {
-			val promisedCacheKey = imageCacheKeys.promiseImageCacheKey(libraryId, serviceFile);
+			val promisedCacheKey = imageCacheKeys.promiseImageCacheKey(libraryId, serviceFile)
 
-			val cancellationProxy = CancellationProxy()
+            val cancellationProxy = CancellationProxy()
 			messenger.cancellationRequested(cancellationProxy)
 			cancellationProxy.doCancel(promisedCacheKey)
 

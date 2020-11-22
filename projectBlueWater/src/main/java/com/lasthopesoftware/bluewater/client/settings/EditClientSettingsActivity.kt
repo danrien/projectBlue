@@ -16,7 +16,6 @@ import com.lasthopesoftware.bluewater.R
 import com.lasthopesoftware.bluewater.about.AboutTitleBuilder
 import com.lasthopesoftware.bluewater.client.browsing.library.access.LibraryRemoval
 import com.lasthopesoftware.bluewater.client.browsing.library.access.LibraryRepository
-import com.lasthopesoftware.bluewater.client.browsing.library.access.session.BrowserLibrarySelection
 import com.lasthopesoftware.bluewater.client.browsing.library.access.session.SelectedBrowserLibraryIdentifierProvider
 import com.lasthopesoftware.bluewater.client.browsing.library.repository.Library
 import com.lasthopesoftware.bluewater.client.browsing.library.repository.Library.SyncedFileLocation
@@ -26,7 +25,6 @@ import com.lasthopesoftware.bluewater.client.stored.library.items.StoredItemAcce
 import com.lasthopesoftware.bluewater.permissions.read.ApplicationReadPermissionsRequirementsProvider
 import com.lasthopesoftware.bluewater.permissions.write.ApplicationWritePermissionsRequirementsProvider
 import com.lasthopesoftware.bluewater.shared.android.view.LazyViewFinder
-import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise
 import java.util.*
 
 class EditClientSettingsActivity : AppCompatActivity() {
@@ -54,7 +52,7 @@ class EditClientSettingsActivity : AppCompatActivity() {
 					lazyLibraryProvider.value,
 					SelectedBrowserLibraryIdentifierProvider(this),
 					lazyLibraryProvider.value,
-					BrowserLibrarySelection(this, LocalBroadcastManager.getInstance(this), lazyLibraryProvider.value))))
+                        com.namehillsoftware.client.browsing.library.access.session.BrowserLibrarySelection(this, LocalBroadcastManager.getInstance(this), lazyLibraryProvider.value))))
 	}
 	private var library: Library? = null
 
@@ -138,7 +136,7 @@ class EditClientSettingsActivity : AppCompatActivity() {
 
 		lazyLibraryProvider.value
 			.getLibrary(LibraryId(libraryId))
-			.eventually(LoopedInPromise.response<Library, Unit>({ result ->
+			.eventually(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response<Library, Unit>({ result ->
 				if (result == null) return@response
 
 				library = result
@@ -180,7 +178,7 @@ class EditClientSettingsActivity : AppCompatActivity() {
 	private fun saveLibraryAndFinish() {
 		val library = library ?: return
 
-		lazyLibraryProvider.value.saveLibrary(library).eventually(LoopedInPromise.response<Library, Unit>({
+		lazyLibraryProvider.value.saveLibrary(library).eventually(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response<Library, Unit>({
 			saveButton.findView().text = getText(R.string.btn_saved)
 			finish()
 		}, this))

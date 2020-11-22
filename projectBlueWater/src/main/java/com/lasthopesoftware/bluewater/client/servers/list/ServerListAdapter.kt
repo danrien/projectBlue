@@ -16,18 +16,15 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.lasthopesoftware.bluewater.R
-import com.lasthopesoftware.bluewater.client.browsing.library.access.session.BrowserLibrarySelection
-import com.lasthopesoftware.bluewater.client.browsing.library.access.session.IBrowserLibrarySelection
 import com.lasthopesoftware.bluewater.client.browsing.library.repository.Library
 import com.lasthopesoftware.bluewater.client.browsing.library.repository.LibrarySession
 import com.lasthopesoftware.bluewater.client.servers.list.listeners.EditServerClickListener
 import com.lasthopesoftware.bluewater.client.servers.list.listeners.SelectServerOnClickListener
 import com.lasthopesoftware.bluewater.shared.android.adapters.DeferredListAdapter
 import com.lasthopesoftware.bluewater.shared.android.view.LazyViewFinder
-import com.lasthopesoftware.bluewater.shared.android.view.ViewUtils
 import com.namehillsoftware.handoff.promises.Promise
 
-class ServerListAdapter(private val activity: Activity, private val browserLibrarySelection: IBrowserLibrarySelection)
+class ServerListAdapter(private val activity: Activity, private val browserLibrarySelection: com.namehillsoftware.client.browsing.library.access.session.IBrowserLibrarySelection)
 	: DeferredListAdapter<Library, ServerListAdapter.ViewHolder>(activity, LibraryDiffer) {
 
 	private val localBroadcastManager = lazy { LocalBroadcastManager.getInstance(activity) }
@@ -64,16 +61,16 @@ class ServerListAdapter(private val activity: Activity, private val browserLibra
 		fun update(library: Library) {
 			val textView = textView.findView()
 			textView.text = library.accessCode
-			textView.setTypeface(null, ViewUtils.getActiveListItemTextViewStyle(activeLibrary != null && library.id == activeLibrary?.id))
+			textView.setTypeface(null, com.namehillsoftware.projectblue.shared.android.view.ViewUtils.getActiveListItemTextViewStyle(activeLibrary != null && library.id == activeLibrary.id))
 
 			broadcastReceiver?.run { localBroadcastManager.value.unregisterReceiver(this) }
 			localBroadcastManager.value.registerReceiver(
 				object : BroadcastReceiver() {
 					override fun onReceive(context: Context, intent: Intent) {
-						textView.setTypeface(null, ViewUtils.getActiveListItemTextViewStyle(library.id == intent.getIntExtra(LibrarySession.chosenLibraryInt, -1)))
+						textView.setTypeface(null, com.namehillsoftware.projectblue.shared.android.view.ViewUtils.getActiveListItemTextViewStyle(library.id == intent.getIntExtra(LibrarySession.chosenLibraryInt, -1)))
 					}
 				}.apply { broadcastReceiver = this },
-				IntentFilter(BrowserLibrarySelection.libraryChosenEvent))
+				IntentFilter(com.namehillsoftware.client.browsing.library.access.session.BrowserLibrarySelection.libraryChosenEvent))
 
 			onAttachStateChangeListener?.run { parent.removeOnAttachStateChangeListener(this) }
 			parent.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {

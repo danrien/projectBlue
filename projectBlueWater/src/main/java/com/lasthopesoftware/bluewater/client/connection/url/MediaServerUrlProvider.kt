@@ -1,6 +1,5 @@
 package com.lasthopesoftware.bluewater.client.connection.url
 
-import com.lasthopesoftware.bluewater.shared.IoCommon
 import java.io.UnsupportedEncodingException
 import java.net.URL
 import java.net.URLEncoder
@@ -14,10 +13,10 @@ class MediaServerUrlProvider private constructor(
 	private val baseURL = URL(baseUrl, "/MCWS/v1/")
 
 	constructor(authCode: String?, ipAddress: String?, port: Int, certificateFingerprint: ByteArray)
-		: this(authCode, URL(IoCommon.httpsUriScheme, ipAddress, port, ""), certificateFingerprint)
+		: this(authCode, URL(com.namehillsoftware.projectblue.shared.IoCommon.httpsUriScheme, ipAddress, port, ""), certificateFingerprint)
 
 	constructor(authCode: String?, ipAddress: String?, port: Int)
-		: this(authCode, URL(IoCommon.httpUriScheme, ipAddress, port, ""))
+		: this(authCode, URL(com.namehillsoftware.projectblue.shared.IoCommon.httpUriScheme, ipAddress, port, ""))
 
 	constructor(authCode: String?, baseUrl: URL)
 		: this(authCode, baseUrl, ByteArray(0))

@@ -2,7 +2,6 @@ package com.lasthopesoftware.bluewater.client.stored.sync
 
 import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.lasthopesoftware.bluewater.client.browsing.library.access.ILibraryProvider
 import com.lasthopesoftware.bluewater.client.stored.library.items.files.job.StoredFileJobState
 import com.lasthopesoftware.bluewater.client.stored.library.items.files.job.StoredFileJobStatus
 import com.lasthopesoftware.bluewater.client.stored.library.items.files.job.exceptions.StoredFileJobException
@@ -10,9 +9,10 @@ import com.lasthopesoftware.bluewater.client.stored.library.items.files.job.exce
 import com.lasthopesoftware.bluewater.client.stored.library.items.files.job.exceptions.StoredFileWriteException
 import com.lasthopesoftware.bluewater.client.stored.library.items.files.repository.StoredFile
 import com.lasthopesoftware.bluewater.client.stored.library.sync.ControlLibrarySyncs
-import com.lasthopesoftware.bluewater.shared.MagicPropertyBuilder
-import com.lasthopesoftware.bluewater.shared.observables.StreamedPromise
 import com.lasthopesoftware.storage.write.exceptions.StorageCreatePathException
+import com.namehillsoftware.client.browsing.library.access.ILibraryProvider
+import com.namehillsoftware.projectblue.shared.MagicPropertyBuilder
+import com.namehillsoftware.projectblue.shared.observables.StreamedPromise
 import io.reactivex.Completable
 import io.reactivex.exceptions.CompositeException
 import org.slf4j.LoggerFactory

@@ -12,15 +12,14 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.lasthopesoftware.bluewater.R
 import com.lasthopesoftware.bluewater.client.browsing.BrowserEntryActivity
 import com.lasthopesoftware.bluewater.client.connection.IConnectionProvider
-import com.lasthopesoftware.bluewater.client.connection.session.InstantiateSessionConnectionActivity
 import com.lasthopesoftware.bluewater.client.connection.session.SessionConnection.BuildingSessionConnectionStatus
 import com.lasthopesoftware.bluewater.client.connection.session.SessionConnection.Companion.getInstance
 import com.lasthopesoftware.bluewater.settings.ApplicationSettingsActivity
 import com.lasthopesoftware.bluewater.shared.MagicPropertyBuilder
 import com.lasthopesoftware.bluewater.shared.android.view.LazyViewFinder
-import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise
-import com.lasthopesoftware.bluewater.shared.promises.extensions.toPromise
 import com.namehillsoftware.lazyj.Lazy
+import com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise
+import com.namehillsoftware.projectblue.shared.promises.extensions.toPromise
 
 class InstantiateSessionConnectionActivity : Activity() {
 	private val lblConnectionStatus = LazyViewFinder<TextView>(this, R.id.lblConnectionStatus)
@@ -53,7 +52,7 @@ class InstantiateSessionConnectionActivity : Activity() {
 		localBroadcastManager.getObject().registerReceiver(buildSessionConnectionReceiver, IntentFilter(SessionConnection.buildSessionBroadcast))
 		getInstance(this)
 			.promiseSessionConnection()
-			.eventually(LoopedInPromise.response({ c: IConnectionProvider? ->
+			.eventually(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response({ c: IConnectionProvider? ->
 				if (c == null)
 					launchActivityDelayed(selectServerIntent.getObject())
 				else if (intent == null || START_ACTIVITY_FOR_RETURN != intent.action)
@@ -62,7 +61,7 @@ class InstantiateSessionConnectionActivity : Activity() {
 					finish()
 
 				Unit.toPromise()
-			}, this), LoopedInPromise.response({
+			}, this), com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response({
 				launchActivityDelayed(selectServerIntent.getObject())
 
 				Unit.toPromise()

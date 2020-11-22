@@ -1,7 +1,6 @@
 package com.lasthopesoftware.bluewater.client.browsing.library.views.access
 
 import com.lasthopesoftware.bluewater.client.browsing.items.access.ItemResponse
-import com.lasthopesoftware.bluewater.client.browsing.library.access.RevisionChecker
 import com.lasthopesoftware.bluewater.client.browsing.library.views.KnownViews
 import com.lasthopesoftware.bluewater.client.browsing.library.views.PlaylistViewItem
 import com.lasthopesoftware.bluewater.client.browsing.library.views.StandardViewItem
@@ -12,7 +11,7 @@ import okhttp3.Response
 
 class LibraryViewsByConnectionProvider : ProvideLibraryViewsUsingConnection {
 	override fun promiseLibraryViewsFromConnection(connectionProvider: IConnectionProvider): Promise<Collection<ViewItem>> {
-		return RevisionChecker.promiseRevision(connectionProvider)
+		return com.namehillsoftware.client.browsing.library.access.RevisionChecker.promiseRevision(connectionProvider)
 			.eventually { serverRevision: Int ->
 				synchronized(browseLibraryParameter) {
 					if (cachedFileSystemItems != null && revision == serverRevision)

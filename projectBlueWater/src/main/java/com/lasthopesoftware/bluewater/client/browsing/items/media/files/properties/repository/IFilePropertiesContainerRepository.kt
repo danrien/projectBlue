@@ -1,12 +1,11 @@
 package com.lasthopesoftware.bluewater.client.browsing.items.media.files.properties.repository
 
 import com.lasthopesoftware.bluewater.client.browsing.items.media.files.ServiceFile
-import com.lasthopesoftware.bluewater.shared.UrlKeyHolder
 
 /**
  * Created by david on 3/14/17.
  */
 interface IFilePropertiesContainerRepository {
-	fun getFilePropertiesContainer(key: UrlKeyHolder<ServiceFile>): FilePropertiesContainer?
-	fun putFilePropertiesContainer(key: UrlKeyHolder<ServiceFile>, filePropertiesContainer: FilePropertiesContainer)
+	fun getFilePropertiesContainer(key: com.namehillsoftware.projectblue.shared.UrlKeyHolder<ServiceFile>): FilePropertiesContainer?
+	fun putFilePropertiesContainer(key: com.namehillsoftware.projectblue.shared.UrlKeyHolder<ServiceFile>, filePropertiesContainer: FilePropertiesContainer)
 }

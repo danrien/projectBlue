@@ -30,12 +30,10 @@ import com.lasthopesoftware.bluewater.client.connection.session.SessionConnectio
 import com.lasthopesoftware.bluewater.client.playback.view.nowplaying.NowPlayingFloatingActionButton
 import com.lasthopesoftware.bluewater.shared.MagicPropertyBuilder
 import com.lasthopesoftware.bluewater.shared.android.view.LazyViewFinder
-import com.lasthopesoftware.bluewater.shared.android.view.ScaledWrapImageView
-import com.lasthopesoftware.bluewater.shared.exceptions.UnexpectedExceptionToasterResponse
 import com.lasthopesoftware.bluewater.shared.images.DefaultImageProvider
-import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise
-import com.lasthopesoftware.bluewater.shared.promises.extensions.toPromise
 import com.namehillsoftware.lazyj.AbstractSynchronousLazy
+import com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise
+import com.namehillsoftware.projectblue.shared.promises.extensions.toPromise
 
 class FileDetailsActivity : AppCompatActivity() {
 
@@ -46,11 +44,11 @@ class FileDetailsActivity : AppCompatActivity() {
 	private val artistTextViewFinder = LazyViewFinder<TextView>(this, R.id.tvArtist)
 	private val fileThumbnailContainer = LazyViewFinder<RelativeLayout>(this, R.id.rlFileThumbnailContainer)
 
-	private val imgFileThumbnailBuilder = object : AbstractSynchronousLazy<ScaledWrapImageView>() {
-		override fun create(): ScaledWrapImageView {
+	private val imgFileThumbnailBuilder = object : AbstractSynchronousLazy<com.namehillsoftware.projectblue.shared.android.view.ScaledWrapImageView>() {
+		override fun create(): com.namehillsoftware.projectblue.shared.android.view.ScaledWrapImageView {
 			val rlFileThumbnailContainer = fileThumbnailContainer.findView()
 
-			val imgFileThumbnail = ScaledWrapImageView(this@FileDetailsActivity)
+			val imgFileThumbnail = com.namehillsoftware.projectblue.shared.android.view.ScaledWrapImageView(this@FileDetailsActivity)
 			imgFileThumbnail.setBackgroundResource(R.drawable.drop_shadow)
 			imgFileThumbnail.layoutParams = imgFileThumbnailLayoutParams.getObject()
 
@@ -95,7 +93,7 @@ class FileDetailsActivity : AppCompatActivity() {
 		SessionConnection.getInstance(this).promiseSessionConnection()
 			.then { c -> FormattedSessionFilePropertiesProvider(c, FilePropertyCache.getInstance()) }
 			.eventually { f -> f.promiseFileProperties(ServiceFile(fileKey)) }
-			.eventually(LoopedInPromise.response({ fileProperties ->
+			.eventually(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response({ fileProperties ->
 				setFileNameFromProperties(fileProperties)
 
 				val artist = fileProperties[KnownFileProperties.ARTIST]
@@ -110,7 +108,7 @@ class FileDetailsActivity : AppCompatActivity() {
 				lvFileDetails.findView().visibility = View.VISIBLE
 			}, this))
 			.excuse(HandleViewIoException(this) { setView(fileKey) })
-			.eventuallyExcuse(LoopedInPromise.response(UnexpectedExceptionToasterResponse(this), this))
+			.eventuallyExcuse(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response(com.namehillsoftware.projectblue.shared.exceptions.UnexpectedExceptionToasterResponse(this), this))
 			.then { finish() }
 
 		lazyImageProvider.value
@@ -118,7 +116,7 @@ class FileDetailsActivity : AppCompatActivity() {
 			.eventually { bitmap ->
 				bitmap?.toPromise() ?: defaultImageProvider.value.promiseFileBitmap()
 			}
-			.eventually(LoopedInPromise.response({ result ->
+			.eventually(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response({ result ->
 				imgFileThumbnailBuilder.getObject().setImageBitmap(result)
 				pbLoadingFileThumbnail.findView().visibility = View.INVISIBLE
 				imgFileThumbnailBuilder.getObject().visibility = View.VISIBLE

@@ -10,7 +10,6 @@ import com.lasthopesoftware.bluewater.client.connection.specs.FakeConnectionProv
 import com.lasthopesoftware.bluewater.client.servers.version.IProgramVersionProvider;
 import com.lasthopesoftware.bluewater.client.servers.version.SemanticVersion;
 import com.lasthopesoftware.bluewater.shared.promises.extensions.specs.FuturePromise;
-import com.lasthopesoftware.resources.scheduling.ParsingScheduler;
 import com.namehillsoftware.handoff.promises.Promise;
 
 import org.junit.BeforeClass;

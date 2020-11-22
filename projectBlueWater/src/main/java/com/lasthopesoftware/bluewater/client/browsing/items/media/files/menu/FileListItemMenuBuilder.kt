@@ -16,9 +16,8 @@ import com.lasthopesoftware.bluewater.client.playback.service.PlaybackService
 import com.lasthopesoftware.bluewater.client.playback.service.broadcasters.PlaylistEvents
 import com.lasthopesoftware.bluewater.client.playback.view.nowplaying.INowPlayingFileProvider
 import com.lasthopesoftware.bluewater.shared.android.view.LazyViewFinder
-import com.lasthopesoftware.bluewater.shared.android.view.ViewUtils
-import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise
 import com.namehillsoftware.handoff.promises.Promise
+import com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise
 
 class FileListItemMenuBuilder(private val serviceFiles: Collection<ServiceFile>, private val nowPlayingFileProvider: INowPlayingFileProvider, private val fileListItemNowPlayingRegistrar: FileListItemNowPlayingRegistrar)
 	: AbstractFileListItemMenuBuilder<FileListItemMenuBuilder.ViewHolder>(R.layout.layout_file_item_menu) {
@@ -41,14 +40,14 @@ class FileListItemMenuBuilder(private val serviceFiles: Collection<ServiceFile>,
 			val textView = fileListItemContainer.findTextView()
 			textView.setTypeface(null, Typeface.NORMAL)
 			nowPlayingFileProvider.nowPlayingFile
-				.eventually(LoopedInPromise.response({ f ->
-					textView.setTypeface(null, ViewUtils.getActiveListItemTextViewStyle(serviceFile == f))
+				.eventually(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response({ f ->
+					textView.setTypeface(null, com.namehillsoftware.projectblue.shared.android.view.ViewUtils.getActiveListItemTextViewStyle(serviceFile == f))
 				}, textView.context))
 
 			fileListItemNowPlayingHandler?.close()
 			fileListItemNowPlayingHandler = fileListItemNowPlayingRegistrar.registerNewHandler(fileListItemContainer) { _, intent ->
 				val fileKey = intent.getIntExtra(PlaylistEvents.PlaybackFileParameters.fileKey, -1)
-				textView.setTypeface(null, ViewUtils.getActiveListItemTextViewStyle(serviceFile.key == fileKey))
+				textView.setTypeface(null, com.namehillsoftware.projectblue.shared.android.view.ViewUtils.getActiveListItemTextViewStyle(serviceFile.key == fileKey))
 			}
 
 			val viewAnimator = fileListItemContainer.viewAnimator

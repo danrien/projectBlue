@@ -81,13 +81,6 @@ android {
                 exclude '**/specs/**'
             }
         }
-
-        test {
-            java {
-                setRoot 'src/main'
-                include '**/specs/**'
-            }
-        }
     }
 
     dexOptions {
@@ -150,6 +143,9 @@ dependencies {
 	implementation 'com.squareup.okio:okio:2.7.0'
 	implementation 'com.squareup.okhttp3:okhttp:4.8.0'
 	implementation 'com.github.namehillsoftware:artful:0.3.0'
+	implementation project(path: ':shared')
+	implementation project(path: ':playback')
+	implementation project(path: ':browsing')
 	testImplementation 'com.annimon:stream:1.2.1'
 	testImplementation 'junit:junit:4.13'
 	testImplementation 'org.mockito:mockito-core:3.4.4'

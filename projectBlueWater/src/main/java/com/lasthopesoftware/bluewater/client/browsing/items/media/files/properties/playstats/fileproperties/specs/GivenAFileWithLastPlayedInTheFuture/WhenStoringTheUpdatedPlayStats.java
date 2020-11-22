@@ -8,7 +8,6 @@ import com.lasthopesoftware.bluewater.client.browsing.items.media.files.properti
 import com.lasthopesoftware.bluewater.client.browsing.items.media.files.properties.specs.FakeFilePropertiesContainer;
 import com.lasthopesoftware.bluewater.client.browsing.library.access.specs.FakeRevisionConnectionProvider;
 import com.lasthopesoftware.bluewater.client.connection.specs.FakeConnectionResponseTuple;
-import com.lasthopesoftware.resources.scheduling.ParsingScheduler;
 
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -23,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class WhenStoringTheUpdatedPlayStats {
 
 	private static Map<String, String> fileProperties;
-	private static long lastPlayed = Duration.millis(DateTime.now().plus(Duration.standardDays(10)).getMillis()).getStandardSeconds();
+	private static final long lastPlayed = Duration.millis(DateTime.now().plus(Duration.standardDays(10)).getMillis()).getStandardSeconds();
 
 	@BeforeClass
 	public static void before() throws InterruptedException {
@@ -39,10 +38,10 @@ public class WhenStoringTheUpdatedPlayStats {
 				"<Item>\n" +
 					"<Field Name=\"Key\">23</Field>\n" +
 					"<Field Name=\"Media Type\">Audio</Field>\n" +
-					"<Field Name=\"" + KnownFileProperties.LAST_PLAYED + "\">" + String.valueOf(lastPlayed) + "</Field>\n" +
+					"<Field Name=\"" + KnownFileProperties.LAST_PLAYED + "\">" + lastPlayed + "</Field>\n" +
 					"<Field Name=\"Rating\">4</Field>\n" +
 					"<Field Name=\"File Size\">2345088</Field>\n" +
-					"<Field Name=\"" + KnownFileProperties.DURATION + "\">" + String.valueOf(duration) + "</Field>\n" +
+					"<Field Name=\"" + KnownFileProperties.DURATION + "\">" + duration + "</Field>\n" +
 					"<Field Name=\"" + KnownFileProperties.NUMBER_PLAYS + "\">52</Field>\n" +
 				"</Item>\n" +
 			"</MPL>\n").getBytes()),

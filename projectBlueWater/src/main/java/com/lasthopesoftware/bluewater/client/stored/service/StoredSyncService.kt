@@ -51,8 +51,6 @@ import com.lasthopesoftware.bluewater.client.stored.service.notifications.SyncCh
 import com.lasthopesoftware.bluewater.client.stored.service.receivers.SyncStartedReceiver
 import com.lasthopesoftware.bluewater.client.stored.service.receivers.file.*
 import com.lasthopesoftware.bluewater.client.stored.sync.StoredFileSynchronization
-import com.lasthopesoftware.bluewater.shared.GenericBinder
-import com.lasthopesoftware.bluewater.shared.IoCommon
 import com.lasthopesoftware.bluewater.shared.MagicPropertyBuilder
 import com.lasthopesoftware.resources.notifications.NoOpChannelActivator
 import com.lasthopesoftware.resources.notifications.notificationchannel.NotificationChannelActivator
@@ -123,7 +121,7 @@ class StoredSyncService : Service(), PostSyncNotification {
 		object : BroadcastReceiver() {
 			override fun onReceive(context: Context, intent: Intent) {
 				val isSyncOnWifiOnly = lazySharedPreferences.value.getBoolean(ApplicationConstants.PreferenceConstants.isSyncOnWifiOnlyKey, false)
-				if (isSyncOnWifiOnly && !IoCommon.isWifiConnected(context)) cancelSync(this@StoredSyncService)
+				if (isSyncOnWifiOnly && !com.namehillsoftware.projectblue.shared.IoCommon.isWifiConnected(context)) cancelSync(this@StoredSyncService)
 			}
 		}
 	}
@@ -365,7 +363,7 @@ class StoredSyncService : Service(), PostSyncNotification {
 
 	override fun onBind(intent: Intent): IBinder? = lazyBinder.value
 
-	private val lazyBinder = lazy { GenericBinder(this) }
+	private val lazyBinder = lazy { com.namehillsoftware.projectblue.shared.GenericBinder(this) }
 
 	override fun notify(notificationText: String?) {
 		val notifyBuilder = NotificationCompat.Builder(this, lazyActiveNotificationChannelId.value)

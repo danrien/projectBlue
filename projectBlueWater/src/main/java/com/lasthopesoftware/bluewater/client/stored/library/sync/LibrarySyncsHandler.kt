@@ -7,8 +7,6 @@ import com.lasthopesoftware.bluewater.client.stored.library.items.files.job.Proc
 import com.lasthopesoftware.bluewater.client.stored.library.items.files.job.StoredFileJob
 import com.lasthopesoftware.bluewater.client.stored.library.items.files.job.StoredFileJobStatus
 import com.lasthopesoftware.bluewater.client.stored.library.items.files.updates.UpdateStoredFiles
-import com.lasthopesoftware.bluewater.shared.observables.ObservedPromise
-import com.lasthopesoftware.bluewater.shared.observables.StreamedPromise
 import com.namehillsoftware.handoff.promises.MessengerOperator
 import com.namehillsoftware.handoff.promises.Promise
 import com.namehillsoftware.handoff.promises.propagation.CancellationProxy
@@ -25,7 +23,7 @@ class LibrarySyncsHandler(
 
 	override fun observeLibrarySync(libraryId: LibraryId): Observable<StoredFileJobStatus> {
 		val promisedServiceFilesToSync = serviceFilesToSyncCollector.promiseServiceFilesToSync(libraryId)
-		return StreamedPromise.stream(Promise(MessengerOperator<Set<ServiceFile>> { messenger ->
+		return com.namehillsoftware.projectblue.shared.observables.StreamedPromise.stream(Promise(MessengerOperator<Set<ServiceFile>> { messenger ->
 			val cancellationProxy = CancellationProxy()
 			messenger.cancellationRequested(cancellationProxy)
 			cancellationProxy.doCancel(promisedServiceFilesToSync)
@@ -60,7 +58,7 @@ class LibrarySyncsHandler(
 				.then { storedFileJobs ->
 					storedFileJobsProcessor.observeStoredFileDownload(storedFileJobs.filterNotNull())
 				}
-			ObservedPromise.observe(observablePromise)
+			com.namehillsoftware.projectblue.shared.observables.ObservedPromise.observe(observablePromise)
 		}
 		.flatMap { it }
 	}

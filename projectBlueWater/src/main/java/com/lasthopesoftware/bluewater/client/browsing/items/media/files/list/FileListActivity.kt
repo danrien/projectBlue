@@ -34,11 +34,9 @@ import com.lasthopesoftware.bluewater.client.playback.view.nowplaying.NowPlaying
 import com.lasthopesoftware.bluewater.client.playback.view.nowplaying.NowPlayingFloatingActionButton.Companion.addNowPlayingFloatingActionButton
 import com.lasthopesoftware.bluewater.shared.MagicPropertyBuilder
 import com.lasthopesoftware.bluewater.shared.android.view.LazyViewFinder
-import com.lasthopesoftware.bluewater.shared.android.view.ViewUtils
-import com.lasthopesoftware.bluewater.shared.exceptions.UnexpectedExceptionToasterResponse
-import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise
 import com.namehillsoftware.handoff.promises.response.ImmediateResponse
 import com.namehillsoftware.handoff.promises.response.PromisedResponse
+import com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise
 
 class FileListActivity :
 	AppCompatActivity(),
@@ -85,11 +83,11 @@ class FileListActivity :
 			}
 			.eventually(onFileProviderComplete.value)
 			.excuse(HandleViewIoException(this, this))
-			.eventuallyExcuse(LoopedInPromise.response(UnexpectedExceptionToasterResponse(this), this))
+			.eventuallyExcuse(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response(com.namehillsoftware.projectblue.shared.exceptions.UnexpectedExceptionToasterResponse(this), this))
 			.then { finish() }
 	}
 
-	override fun invoke(): PromisedResponse<List<ServiceFile>?, Unit> = LoopedInPromise.response(this, this)
+	override fun invoke(): PromisedResponse<List<ServiceFile>?, Unit> = com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response(this, this)
 
 	override fun respond(serviceFiles: List<ServiceFile>?) {
 		if (serviceFiles == null) return
@@ -134,10 +132,10 @@ class FileListActivity :
 		itemId = savedInstanceState.getInt(key)
 	}
 
-	override fun onCreateOptionsMenu(menu: Menu) = ViewUtils.buildStandardMenu(this, menu)
+	override fun onCreateOptionsMenu(menu: Menu) = com.namehillsoftware.projectblue.shared.android.view.ViewUtils.buildStandardMenu(this, menu)
 
 	override fun onOptionsItemSelected(item: MenuItem) =
-		ViewUtils.handleNavMenuClicks(this, item) || super.onOptionsItemSelected(item)
+		com.namehillsoftware.projectblue.shared.android.view.ViewUtils.handleNavMenuClicks(this, item) || super.onOptionsItemSelected(item)
 
 	override fun onBackPressed() {
 		if (LongClickViewAnimatorListener.tryFlipToPreviousView(viewAnimator)) return

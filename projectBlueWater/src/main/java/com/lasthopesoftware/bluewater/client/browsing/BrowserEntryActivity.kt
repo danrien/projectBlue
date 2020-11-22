@@ -25,10 +25,7 @@ import com.lasthopesoftware.bluewater.client.browsing.items.list.IItemListViewCo
 import com.lasthopesoftware.bluewater.client.browsing.items.list.menus.changes.handlers.ItemListMenuChangeHandler
 import com.lasthopesoftware.bluewater.client.browsing.items.menu.LongClickViewAnimatorListener
 import com.lasthopesoftware.bluewater.client.browsing.items.playlists.PlaylistListFragment
-import com.lasthopesoftware.bluewater.client.browsing.library.access.LibraryRepository
-import com.lasthopesoftware.bluewater.client.browsing.library.access.session.*
-import com.lasthopesoftware.bluewater.client.browsing.library.repository.Library
-import com.lasthopesoftware.bluewater.client.browsing.library.repository.Library.ViewType
+import com.lasthopesoftware.bluewater.client.browsing.library.access.session.SelectedBrowserLibraryIdentifierProvider
 import com.lasthopesoftware.bluewater.client.browsing.library.views.*
 import com.lasthopesoftware.bluewater.client.browsing.library.views.access.LibraryViewsByConnectionProvider
 import com.lasthopesoftware.bluewater.client.browsing.library.views.access.LibraryViewsProvider
@@ -41,13 +38,12 @@ import com.lasthopesoftware.bluewater.client.connection.session.SessionConnectio
 import com.lasthopesoftware.bluewater.client.playback.view.nowplaying.NowPlayingFloatingActionButton
 import com.lasthopesoftware.bluewater.client.stored.library.items.files.fragment.ActiveFileDownloadsFragment
 import com.lasthopesoftware.bluewater.settings.ApplicationSettingsActivity
-import com.lasthopesoftware.bluewater.shared.MagicPropertyBuilder
-import com.lasthopesoftware.bluewater.shared.android.view.LazyViewFinder
-import com.lasthopesoftware.bluewater.shared.android.view.ViewUtils
-import com.lasthopesoftware.bluewater.shared.exceptions.UnexpectedExceptionToasterResponse
-import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise
+import com.namehillsoftware.client.browsing.library.access.LibraryRepository
+import com.namehillsoftware.client.browsing.library.access.session.SelectedBrowserLibraryProvider
+import com.namehillsoftware.client.browsing.library.repository.Library
 import com.namehillsoftware.handoff.promises.response.ImmediateResponse
 import com.namehillsoftware.lazyj.AbstractSynchronousLazy
+import com.namehillsoftware.projectblue.shared.android.view.LazyViewFinder
 import org.slf4j.LoggerFactory
 import java.util.*
 
@@ -90,15 +86,15 @@ class BrowserEntryActivity : AppCompatActivity(), IItemListViewContainer, Runnab
 		}
 	}
 
-	private val lazySelectedBrowserLibraryProvider = object : AbstractSynchronousLazy<ISelectedBrowserLibraryProvider>() {
-		override fun create(): ISelectedBrowserLibraryProvider = SelectedBrowserLibraryProvider(
+	private val lazySelectedBrowserLibraryProvider = object : AbstractSynchronousLazy<com.namehillsoftware.client.browsing.library.access.session.ISelectedBrowserLibraryProvider>() {
+		override fun create(): com.namehillsoftware.client.browsing.library.access.session.ISelectedBrowserLibraryProvider = SelectedBrowserLibraryProvider(
 			SelectedBrowserLibraryIdentifierProvider(this@BrowserEntryActivity),
 			lazyLibraryRepository.getObject())
 	}
 
 	private val libraryChosenEventReceiver = object : BroadcastReceiver() {
 		override fun onReceive(context: Context, intent: Intent) {
-			val chosenLibrary = intent.getIntExtra(LibrarySelectionKey.chosenLibraryKey, -1)
+			val chosenLibrary = intent.getIntExtra(com.namehillsoftware.client.browsing.library.access.session.LibrarySelectionKey.chosenLibraryKey, -1)
 			if (chosenLibrary >= 0) finishAffinity()
 		}
 	}
@@ -146,7 +142,7 @@ class BrowserEntryActivity : AppCompatActivity(), IItemListViewContainer, Runnab
 
 		lazyLocalBroadcastManager.value.registerReceiver(
 			libraryChosenEventReceiver,
-			IntentFilter(BrowserLibrarySelection.libraryChosenEvent))
+			IntentFilter(com.namehillsoftware.client.browsing.library.access.session.BrowserLibrarySelection.libraryChosenEvent))
 
 		nowPlayingFloatingActionButton = NowPlayingFloatingActionButton.addNowPlayingFloatingActionButton(findViewById(R.id.browseLibraryRelativeLayout))
 
@@ -186,7 +182,7 @@ class BrowserEntryActivity : AppCompatActivity(), IItemListViewContainer, Runnab
 
 		lazySelectedBrowserLibraryProvider.getObject()
 			.browserLibrary
-			.eventually(LoopedInPromise.response({ library ->
+			.eventually(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response({ library ->
 				when {
 					library == null -> {
 						// No library, must bail out
@@ -194,9 +190,9 @@ class BrowserEntryActivity : AppCompatActivity(), IItemListViewContainer, Runnab
 					}
 					showDownloadsAction == intent.action -> {
 						library.setSelectedView(0)
-						library.setSelectedViewType(ViewType.DownloadView)
+						library.setSelectedViewType(Library.ViewType.DownloadView)
 						lazyLibraryRepository.getObject().saveLibrary(library)
-							.eventually(LoopedInPromise.response(this::displayLibrary, this))
+							.eventually(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response(this::displayLibrary, this))
 
 						// Clear the action
 						intent.action = null
@@ -219,12 +215,12 @@ class BrowserEntryActivity : AppCompatActivity(), IItemListViewContainer, Runnab
 			.promiseSelectedOrDefaultView()
 			.eventually { selectedView ->
 				lazyLibraryViewsProvider.value.promiseLibraryViews()
-					.eventually(LoopedInPromise.response(
+					.eventually(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response(
 						{ items: Collection<ViewItem> -> updateLibraryView(selectedView!!, items) },
 						this))
 			}
 			.excuse(HandleViewIoException(this, this))
-			.eventuallyExcuse(LoopedInPromise.response(UnexpectedExceptionToasterResponse(this), this))
+			.eventuallyExcuse(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response(com.namehillsoftware.projectblue.shared.exceptions.UnexpectedExceptionToasterResponse(this), this))
 			.then {
 				ApplicationSettingsActivity.launch(this)
 				finish()
@@ -289,18 +285,18 @@ class BrowserEntryActivity : AppCompatActivity(), IItemListViewContainer, Runnab
 				library.setSelectedView(selectedViewKey)
 				library.setSelectedViewType(selectedViewType)
 				lazyLibraryRepository.getObject().saveLibrary(library)
-					.eventually(LoopedInPromise.response(this::displayLibrary, this))
+					.eventually(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response(this::displayLibrary, this))
 			})
 	}
 
 	override fun onCreateOptionsMenu(menu: Menu): Boolean {
-		return ViewUtils.buildStandardMenu(this, menu)
+		return com.namehillsoftware.projectblue.shared.android.view.ViewUtils.buildStandardMenu(this, menu)
 	}
 
 	override fun onOptionsItemSelected(item: MenuItem): Boolean {
 		return drawerToggle.isCreated
 			&& drawerToggle.getObject().onOptionsItemSelected(item)
-			|| ViewUtils.handleMenuClicks(this, item)
+			|| com.namehillsoftware.projectblue.shared.android.view.ViewUtils.handleMenuClicks(this, item)
 	}
 
 	override fun onPostCreate(savedInstanceState: Bundle?) {

@@ -15,16 +15,14 @@ import com.lasthopesoftware.bluewater.client.browsing.items.Item
 import com.lasthopesoftware.bluewater.client.browsing.items.access.ItemProvider
 import com.lasthopesoftware.bluewater.client.browsing.items.list.menus.changes.handlers.IItemListMenuChangeHandler
 import com.lasthopesoftware.bluewater.client.browsing.items.menu.LongClickViewAnimatorListener
-import com.lasthopesoftware.bluewater.client.browsing.library.access.LibraryRepository
 import com.lasthopesoftware.bluewater.client.browsing.library.access.session.SelectedBrowserLibraryIdentifierProvider
-import com.lasthopesoftware.bluewater.client.browsing.library.repository.Library
 import com.lasthopesoftware.bluewater.client.connection.HandleViewIoException
 import com.lasthopesoftware.bluewater.client.connection.session.SessionConnection.Companion.getInstance
-import com.lasthopesoftware.bluewater.shared.MagicPropertyBuilder
-import com.lasthopesoftware.bluewater.shared.exceptions.UnexpectedExceptionToasterResponse
-import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise
+import com.namehillsoftware.client.browsing.library.access.LibraryRepository
+import com.namehillsoftware.client.browsing.library.repository.Library
 import com.namehillsoftware.handoff.promises.Promise
 import com.namehillsoftware.handoff.promises.response.ImmediateResponse
+import com.namehillsoftware.projectblue.shared.MagicPropertyBuilder
 
 class BrowseLibraryViewsFragment : Fragment(R.layout.tabbed_library_items_layout), IItemListMenuChangeHandler, TabLayout.OnTabSelectedListener {
 
@@ -117,7 +115,7 @@ class BrowseLibraryViewsFragment : Fragment(R.layout.tabbed_library_items_layout
 	) : Runnable, ImmediateResponse<List<Item>, Unit> {
 
 		private val handler = lazy { Handler(context.mainLooper) }
-		private val fillVisibleViews = lazy { LoopedInPromise.response(this, handler.value) }
+		private val fillVisibleViews = lazy { com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response(this, handler.value) }
 
 		init {
 			tabbedLibraryViewsContainer.visibility = View.INVISIBLE
@@ -134,7 +132,7 @@ class BrowseLibraryViewsFragment : Fragment(R.layout.tabbed_library_items_layout
 						.eventually(fillVisibleViews.value)
 						.run {
 							if (savedInstanceState == null) this
-							else this.eventually<Unit>(LoopedInPromise.response({
+							else this.eventually<Unit>(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response({
 								val savedSelectedView = savedInstanceState.getInt(SAVED_SELECTED_VIEW, -1)
 								if (savedSelectedView < 0 || savedSelectedView != library.selectedView) return@response
 
@@ -146,7 +144,7 @@ class BrowseLibraryViewsFragment : Fragment(R.layout.tabbed_library_items_layout
 							}, handler.value))
 						}
 						.excuse(HandleViewIoException(context, this))
-						.eventuallyExcuse(LoopedInPromise.response(UnexpectedExceptionToasterResponse(context), handler.value))
+						.eventuallyExcuse(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response(com.namehillsoftware.projectblue.shared.exceptions.UnexpectedExceptionToasterResponse(context), handler.value))
 					}
 				}
 		}

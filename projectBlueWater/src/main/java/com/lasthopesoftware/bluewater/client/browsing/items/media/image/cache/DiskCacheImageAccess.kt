@@ -4,7 +4,6 @@ import com.lasthopesoftware.bluewater.client.browsing.items.media.files.ServiceF
 import com.lasthopesoftware.bluewater.client.browsing.items.media.files.cached.IProvideCaches
 import com.lasthopesoftware.bluewater.client.browsing.items.media.image.GetRawImages
 import com.lasthopesoftware.bluewater.client.browsing.library.repository.LibraryId
-import com.lasthopesoftware.bluewater.shared.promises.extensions.toPromise
 import com.lasthopesoftware.resources.scheduling.ParsingScheduler
 import com.namehillsoftware.handoff.Messenger
 import com.namehillsoftware.handoff.promises.MessengerOperator
@@ -13,6 +12,7 @@ import com.namehillsoftware.handoff.promises.propagation.CancellationProxy
 import com.namehillsoftware.handoff.promises.propagation.PromiseProxy
 import com.namehillsoftware.handoff.promises.queued.MessageWriter
 import com.namehillsoftware.handoff.promises.queued.QueuedPromise
+import com.namehillsoftware.projectblue.shared.promises.extensions.toPromise
 import org.apache.commons.io.IOUtils
 import org.slf4j.LoggerFactory
 import java.io.*
@@ -76,7 +76,7 @@ class DiskCacheImageAccess(private val sourceImages: GetRawImages, private val i
 		}
 	}
 
-	private class ImageDiskCacheWriter internal constructor(private val imageCacheFile: File) : MessageWriter<ByteArray> {
+	private class ImageDiskCacheWriter(private val imageCacheFile: File) : MessageWriter<ByteArray> {
 		override fun prepareMessage(): ByteArray = getBytesFromFiles(imageCacheFile)
 	}
 }

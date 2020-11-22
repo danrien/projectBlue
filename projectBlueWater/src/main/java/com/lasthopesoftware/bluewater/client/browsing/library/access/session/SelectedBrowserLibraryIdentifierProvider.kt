@@ -2,7 +2,9 @@ package com.lasthopesoftware.bluewater.client.browsing.library.access.session
 
 import android.content.Context
 import androidx.preference.PreferenceManager
-import com.lasthopesoftware.bluewater.client.browsing.library.repository.LibraryId
+import com.namehillsoftware.client.browsing.library.access.session.ISelectedLibraryIdentifierProvider
+import com.namehillsoftware.client.browsing.library.access.session.LibrarySelectionKey
+import com.namehillsoftware.client.browsing.library.repository.LibraryId
 
 /**
  * Created by david on 2/12/17.

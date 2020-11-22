@@ -12,7 +12,6 @@ import com.lasthopesoftware.bluewater.client.browsing.library.access.ILibraryPro
 import com.lasthopesoftware.bluewater.client.browsing.library.access.LibraryRepository
 import com.lasthopesoftware.bluewater.client.browsing.library.repository.Library
 import com.lasthopesoftware.bluewater.client.browsing.library.repository.LibraryId
-import com.lasthopesoftware.bluewater.shared.promises.extensions.toPromise
 import com.namehillsoftware.handoff.promises.Promise
 import java.util.concurrent.ConcurrentHashMap
 
@@ -35,7 +34,7 @@ class ImageDiskFileCacheFactory private constructor(private val context: Context
 	}
 
 	private fun getCacheFromMemory(libraryId: LibraryId): Promise<ICache>? {
-		return sessionCaches[libraryId]?.toPromise()
+		return sessionCaches[libraryId].toPromise()
 	}
 
 	private fun buildNewCache(library: Library): ICache {

@@ -25,9 +25,8 @@ import com.lasthopesoftware.bluewater.client.stored.library.items.files.fragment
 import com.lasthopesoftware.bluewater.client.stored.library.items.files.retrieval.StoredFilesCollection
 import com.lasthopesoftware.bluewater.client.stored.service.StoredSyncService
 import com.lasthopesoftware.bluewater.client.stored.sync.StoredFileSynchronization
-import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise
 import com.namehillsoftware.handoff.promises.Promise
-import okhttp3.internal.toImmutableList
+import com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise
 
 class ActiveFileDownloadsFragment : Fragment() {
 	private var onSyncStartedReceiver: BroadcastReceiver? = null
@@ -66,7 +65,7 @@ class ActiveFileDownloadsFragment : Fragment() {
 					StoredFilesCollection(context))
 
 				storedFileAccess.downloadingStoredFiles
-					.eventually<Unit>(LoopedInPromise.response({ storedFiles ->
+					.eventually<Unit>(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response({ storedFiles ->
 						val localStoredFiles = storedFiles.groupBy { sf -> sf.id }.values.map { sf -> sf.first() }.toMutableList()
 
 						activeFileDownloadsAdapter.updateListEventually(localStoredFiles)
@@ -93,7 +92,7 @@ class ActiveFileDownloadsFragment : Fragment() {
 									storedFileAccess
 										.getStoredFile(storedFileId)
 										.eventually { storedFile ->
-											if (storedFile != null && storedFile.libraryId == library?.id) {
+											if (storedFile != null && storedFile.libraryId == library.id) {
 												localStoredFiles.add(storedFile)
 												activeFileDownloadsAdapter.updateListEventually(localStoredFiles.toImmutableList())
 											} else {

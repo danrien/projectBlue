@@ -1,7 +1,6 @@
 package com.lasthopesoftware.bluewater.client.connection.testing
 
 import com.lasthopesoftware.bluewater.client.connection.IConnectionProvider
-import com.lasthopesoftware.bluewater.shared.StandardRequest
 import com.namehillsoftware.handoff.promises.Promise
 import okhttp3.Response
 import org.slf4j.LoggerFactory
@@ -16,7 +15,7 @@ class ConnectionTester : TestConnections {
 		response.body?.use { body ->
 			try {
 				body.byteStream().use {
-					return StandardRequest.fromInputStream(it)?.isStatus ?: false
+					return com.namehillsoftware.projectblue.shared.StandardRequest.fromInputStream(it)?.isStatus ?: false
 				}
 			} catch (e: IOException) {
 				logger.error("Error closing connection, device failure?", e)

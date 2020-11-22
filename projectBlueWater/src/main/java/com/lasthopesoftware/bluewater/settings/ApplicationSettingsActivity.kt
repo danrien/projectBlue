@@ -22,7 +22,6 @@ import com.lasthopesoftware.bluewater.ApplicationConstants
 import com.lasthopesoftware.bluewater.R
 import com.lasthopesoftware.bluewater.about.AboutTitleBuilder
 import com.lasthopesoftware.bluewater.client.browsing.library.access.LibraryRepository
-import com.lasthopesoftware.bluewater.client.browsing.library.access.session.BrowserLibrarySelection
 import com.lasthopesoftware.bluewater.client.browsing.library.access.session.SelectedBrowserLibraryIdentifierProvider
 import com.lasthopesoftware.bluewater.client.playback.engine.selection.PlaybackEngineType
 import com.lasthopesoftware.bluewater.client.playback.engine.selection.PlaybackEngineTypeSelectionPersistence
@@ -34,7 +33,6 @@ import com.lasthopesoftware.bluewater.client.servers.list.ServerListAdapter
 import com.lasthopesoftware.bluewater.client.servers.list.listeners.EditServerClickListener
 import com.lasthopesoftware.bluewater.shared.MagicPropertyBuilder
 import com.lasthopesoftware.bluewater.shared.android.view.LazyViewFinder
-import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise
 import com.lasthopesoftware.resources.notifications.notificationchannel.SharedChannelProperties
 import tourguide.tourguide.Overlay
 import tourguide.tourguide.Pointer
@@ -90,7 +88,7 @@ class ApplicationSettingsActivity : AppCompatActivity() {
 			playbackEngineOptions.addView(rb)
 
 		selectedPlaybackEngineTypeAccess.promiseSelectedPlaybackEngineType()
-			.eventually(LoopedInPromise.response({ t ->
+			.eventually(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response({ t ->
 				playbackEngineOptions.check(t.ordinal)
 				for (i in 0 until playbackEngineOptions.childCount)
 					playbackEngineOptions.getChildAt(i).isEnabled = true
@@ -161,14 +159,14 @@ class ApplicationSettingsActivity : AppCompatActivity() {
 
 		val adapter = ServerListAdapter(
 			this,
-			BrowserLibrarySelection(this, LocalBroadcastManager.getInstance(this), libraryProvider))
+			com.namehillsoftware.client.browsing.library.access.session.BrowserLibrarySelection(this, LocalBroadcastManager.getInstance(this), libraryProvider))
 
 		val serverListView = serverListView.findView()
 		serverListView.adapter = adapter
 		serverListView.layoutManager = LinearLayoutManager(this)
 
 		promisedLibraries
-			.eventually(LoopedInPromise.response({ libraries ->
+			.eventually(com.namehillsoftware.projectblue.shared.promises.extensions.LoopedInPromise.response({ libraries ->
 				val chosenLibraryId = SelectedBrowserLibraryIdentifierProvider(this).selectedLibraryId
 				val selectedBrowserLibrary = libraries.firstOrNull { l -> l.libraryId == chosenLibraryId }
 

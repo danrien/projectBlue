@@ -9,7 +9,6 @@ import com.lasthopesoftware.bluewater.client.browsing.items.media.files.menu.Fil
 import com.lasthopesoftware.bluewater.client.browsing.items.media.files.menu.FileListItemNowPlayingRegistrar
 import com.lasthopesoftware.bluewater.client.browsing.items.media.files.menu.FileNameTextViewSetter
 import com.lasthopesoftware.bluewater.client.browsing.items.menu.LongClickViewAnimatorListener
-import com.lasthopesoftware.bluewater.client.playback.file.PositionedFile
 import com.lasthopesoftware.bluewater.client.playback.service.broadcasters.PlaylistEvents
 import com.lasthopesoftware.bluewater.client.playback.view.nowplaying.menu.listeners.FileSeekToClickListener
 import com.lasthopesoftware.bluewater.client.playback.view.nowplaying.menu.listeners.RemovePlaylistFileClickListener
@@ -17,6 +16,7 @@ import com.lasthopesoftware.bluewater.client.playback.view.nowplaying.storage.IN
 import com.lasthopesoftware.bluewater.shared.android.view.LazyViewFinder
 import com.lasthopesoftware.bluewater.shared.android.view.ViewUtils
 import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise
+import com.namehillsoftware.projectblue.playback.file.PositionedFile
 
 
 class NowPlayingFileListItemMenuBuilder(private val nowPlayingRepository: INowPlayingRepository, private val fileListItemNowPlayingRegistrar: FileListItemNowPlayingRegistrar)

@@ -47,11 +47,9 @@ import com.lasthopesoftware.bluewater.client.connection.polling.WaitForConnectio
 import com.lasthopesoftware.bluewater.client.connection.session.InstantiateSessionConnectionActivity
 import com.lasthopesoftware.bluewater.client.connection.session.InstantiateSessionConnectionActivity.Companion.restoreSessionConnection
 import com.lasthopesoftware.bluewater.client.connection.session.SessionConnection
-import com.lasthopesoftware.bluewater.client.playback.file.PositionedFile
 import com.lasthopesoftware.bluewater.client.playback.service.PlaybackService
 import com.lasthopesoftware.bluewater.client.playback.service.broadcasters.PlaylistEvents
 import com.lasthopesoftware.bluewater.client.playback.service.broadcasters.TrackPositionBroadcaster
-import com.lasthopesoftware.bluewater.client.playback.view.nowplaying.activity.NowPlayingActivity
 import com.lasthopesoftware.bluewater.client.playback.view.nowplaying.list.NowPlayingFileListAdapter
 import com.lasthopesoftware.bluewater.client.playback.view.nowplaying.menu.NowPlayingFileListItemMenuBuilder
 import com.lasthopesoftware.bluewater.client.playback.view.nowplaying.storage.NowPlaying
@@ -66,6 +64,7 @@ import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise
 import com.namehillsoftware.handoff.promises.Promise
 import com.namehillsoftware.handoff.promises.queued.MessageWriter
 import com.namehillsoftware.handoff.promises.response.ImmediateResponse
+import com.namehillsoftware.projectblue.playback.file.PositionedFile
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.CancellationException

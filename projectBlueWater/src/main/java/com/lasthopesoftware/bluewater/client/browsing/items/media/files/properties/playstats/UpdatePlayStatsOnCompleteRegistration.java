@@ -35,6 +35,4 @@ public class UpdatePlayStatsOnCompleteRegistration implements IConnectionDepende
 	public Collection<IntentFilter> forIntents() {
 		return intents;
 	}
-
-
 }

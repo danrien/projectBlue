@@ -4,7 +4,6 @@ import com.lasthopesoftware.bluewater.client.browsing.items.media.files.ServiceF
 import com.lasthopesoftware.bluewater.client.browsing.items.media.files.properties.repository.IFilePropertiesContainerRepository
 import com.lasthopesoftware.bluewater.client.browsing.library.repository.LibraryId
 import com.lasthopesoftware.bluewater.client.connection.libraries.ProvideLibraryConnections
-import com.lasthopesoftware.bluewater.shared.UrlKeyHolder
 import com.namehillsoftware.handoff.promises.Promise
 
 /**
@@ -14,7 +13,7 @@ class CachedFilePropertiesProvider(private val libraryConnections: ProvideLibrar
 	override fun promiseFileProperties(libraryId: LibraryId, serviceFile: ServiceFile): Promise<Map<String, String>> {
 		return libraryConnections.promiseLibraryConnection(libraryId)
 			.eventually { connectionProvider ->
-				val urlKeyHolder = UrlKeyHolder(connectionProvider.urlProvider.baseUrl, serviceFile)
+				val urlKeyHolder = com.namehillsoftware.projectblue.shared.UrlKeyHolder(connectionProvider.urlProvider.baseUrl, serviceFile)
 				when(val filePropertiesContainer = filePropertiesContainerRepository.getFilePropertiesContainer(urlKeyHolder)) {
 					null -> filePropertiesProvider.promiseFileProperties(libraryId, serviceFile)
 					else -> Promise(filePropertiesContainer.properties)
