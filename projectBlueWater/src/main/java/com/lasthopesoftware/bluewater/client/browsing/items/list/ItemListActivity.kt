@@ -30,6 +30,7 @@ import com.lasthopesoftware.bluewater.shared.android.view.LazyViewFinder
 import com.lasthopesoftware.bluewater.shared.android.view.ViewUtils
 import com.lasthopesoftware.bluewater.shared.exceptions.UnexpectedExceptionToasterResponse
 import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise
+import com.namehillsoftware.handoff.promises.Promise
 
 class ItemListActivity : AppCompatActivity(), IItemListViewContainer {
 	private val itemListView = LazyViewFinder<ListView>(this, R.id.lvItems)
@@ -105,14 +106,14 @@ class ItemListActivity : AppCompatActivity(), IItemListViewContainer {
 		pbLoading.findView().visibility = View.VISIBLE
 		getInstance(this).promiseSessionConnection()
 			.eventually { c -> c.promiseItems(itemId) }
-			.eventually(LoopedInPromise.response({ items -> buildItemListView(items) }, this))
+			.eventually(::buildItemListView)
 			.then { isListViewHydrated = true }
 			.excuse(HandleViewIoException(this) { hydrateItems() })
 			.eventuallyExcuse(LoopedInPromise.response(UnexpectedExceptionToasterResponse(this), this))
 			.then { finish() }
 	}
 
-	private fun buildItemListView(items: List<Item>) {
+	private fun buildItemListView(items: List<Item>): Promise<Unit> =
 		lazySpecificLibraryProvider.value.browserLibrary
 			.eventually(LoopedInPromise.response({ library ->
 				if (library == null) {
@@ -136,7 +137,6 @@ class ItemListActivity : AppCompatActivity(), IItemListViewContainer {
 					pbLoading.findView().visibility = View.INVISIBLE
 				}
 			}, this))
-	}
 
 	companion object {
 		private val magicPropertyBuilder = MagicPropertyBuilder(ItemListActivity::class.java)
