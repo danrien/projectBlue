@@ -1,128 +1,99 @@
-package com.lasthopesoftware.bluewater.client.browsing.items.playlists;
+package com.lasthopesoftware.bluewater.client.browsing.items.playlists
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
+import android.R
+import android.app.Activity
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ListView
+import android.widget.ProgressBar
+import android.widget.RelativeLayout
+import androidx.fragment.app.Fragment
+import com.lasthopesoftware.bluewater.client.browsing.items.access.ItemProvider.Companion.promiseItems
+import com.lasthopesoftware.bluewater.client.browsing.items.list.menus.changes.handlers.IItemListMenuChangeHandler
+import com.lasthopesoftware.bluewater.client.browsing.items.media.files.access.parameters.FileListParameters
+import com.lasthopesoftware.bluewater.client.browsing.library.access.LibraryRepository
+import com.lasthopesoftware.bluewater.client.browsing.library.access.session.SelectedBrowserLibraryIdentifierProvider
+import com.lasthopesoftware.bluewater.client.browsing.library.access.session.SelectedBrowserLibraryProvider
+import com.lasthopesoftware.bluewater.client.browsing.library.views.handlers.OnGetLibraryViewItemResultsComplete
+import com.lasthopesoftware.bluewater.client.connection.HandleViewIoException
+import com.lasthopesoftware.bluewater.client.connection.session.SessionConnection.Companion.getInstance
+import com.lasthopesoftware.bluewater.client.stored.library.items.StoredItemAccess
+import com.lasthopesoftware.bluewater.shared.exceptions.UnexpectedExceptionToasterResponse
+import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise.Companion.response
 
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
+class PlaylistListFragment : Fragment() {
+	private var itemListMenuChangeHandler: IItemListMenuChangeHandler? = null
 
-import com.lasthopesoftware.bluewater.client.browsing.items.Item;
-import com.lasthopesoftware.bluewater.client.browsing.items.access.ItemProvider;
-import com.lasthopesoftware.bluewater.client.browsing.items.list.menus.changes.handlers.IItemListMenuChangeHandler;
-import com.lasthopesoftware.bluewater.client.browsing.items.media.files.access.parameters.FileListParameters;
-import com.lasthopesoftware.bluewater.client.browsing.library.access.ILibraryProvider;
-import com.lasthopesoftware.bluewater.client.browsing.library.access.LibraryRepository;
-import com.lasthopesoftware.bluewater.client.browsing.library.access.session.ISelectedLibraryIdentifierProvider;
-import com.lasthopesoftware.bluewater.client.browsing.library.access.session.SelectedBrowserLibraryIdentifierProvider;
-import com.lasthopesoftware.bluewater.client.browsing.library.views.handlers.OnGetLibraryViewItemResultsComplete;
-import com.lasthopesoftware.bluewater.client.connection.HandleViewIoException;
-import com.lasthopesoftware.bluewater.client.connection.session.SessionConnection;
-import com.lasthopesoftware.bluewater.client.stored.library.items.StoredItemAccess;
-import com.lasthopesoftware.bluewater.shared.exceptions.UnexpectedExceptionToasterResponse;
-import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise;
-import com.namehillsoftware.handoff.promises.response.PromisedResponse;
-import com.namehillsoftware.handoff.promises.response.VoidResponse;
-import com.namehillsoftware.lazyj.AbstractSynchronousLazy;
-import com.namehillsoftware.lazyj.CreateAndHold;
-
-import java.util.List;
-
-public class PlaylistListFragment extends Fragment {
-
-	private IItemListMenuChangeHandler itemListMenuChangeHandler;
-
-	private final CreateAndHold<ListView> lazyListView = new AbstractSynchronousLazy<ListView>() {
-		@Override
-		protected ListView create() {
-			final ListView listView = new ListView(getActivity());
-			listView.setVisibility(View.INVISIBLE);
-			return listView;
+	private val lazyListView = lazy {
+			val listView = ListView(activity)
+			listView.visibility = View.INVISIBLE
+			listView
 		}
-	};
 
-	private final CreateAndHold<ProgressBar> lazyProgressBar = new AbstractSynchronousLazy<ProgressBar>() {
-		@Override
-		protected ProgressBar create() {
-			final ProgressBar pbLoading = new ProgressBar(getActivity(), null, android.R.attr.progressBarStyleLarge);
-			final RelativeLayout.LayoutParams pbParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-			pbParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-			pbLoading.setLayoutParams(pbParams);
-			return pbLoading;
+	private val lazyProgressBar = lazy {
+			val pbLoading = ProgressBar(activity, null, R.attr.progressBarStyleLarge)
+			val pbParams = RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+			pbParams.addRule(RelativeLayout.CENTER_IN_PARENT)
+			pbLoading.layoutParams = pbParams
+			pbLoading
 		}
-	};
 
-	private final CreateAndHold<RelativeLayout> lazyLayout = new AbstractSynchronousLazy<RelativeLayout>() {
-		@Override
-		protected RelativeLayout create() {
-			final Activity activity = getActivity();
-
-			final RelativeLayout layout = new RelativeLayout(activity);
-			layout.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-
-			layout.addView(lazyProgressBar.getObject());
-			layout.addView(lazyListView.getObject());
-
-			return layout;
+	private val lazyLayout = lazy {
+			val activity: Activity? = activity
+			val layout = RelativeLayout(activity)
+			layout.layoutParams = RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+			layout.addView(lazyProgressBar.value)
+			layout.addView(lazyListView.value)
+			layout
 		}
-	};
 
-	@Nullable
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return lazyLayout.getObject();
+	override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+		return lazyLayout.value
 	}
 
-	@Override
-	public void onStart() {
-		super.onStart();
+	override fun onStart() {
+		super.onStart()
 
-		final FragmentActivity activity = getActivity();
+		val activity = activity ?: return
 
-		if (activity == null) return;
+		lazyListView.value.visibility = View.INVISIBLE
+		lazyProgressBar.value.visibility = View.VISIBLE
 
-		lazyListView.getObject().setVisibility(View.INVISIBLE);
-		lazyProgressBar.getObject().setVisibility(View.VISIBLE);
-
-		final ISelectedLibraryIdentifierProvider selectedLibraryIdentifierProvider = new SelectedBrowserLibraryIdentifierProvider(getContext());
-		final ILibraryProvider libraryProvider = new LibraryRepository(getContext());
-
-		libraryProvider
-			.getLibrary(selectedLibraryIdentifierProvider.getSelectedLibraryId())
-			.then(new VoidResponse<>(library -> {
-				final PromisedResponse<List<Item>, Void> listResolvedPromise =
-					LoopedInPromise.response(
-						new OnGetLibraryViewItemResultsComplete(
+		val selectedLibraryIdentifierProvider = SelectedBrowserLibraryIdentifierProvider(activity)
+		val libraryProvider = LibraryRepository(activity)
+		SelectedBrowserLibraryProvider(selectedLibraryIdentifierProvider, libraryProvider)
+			.browserLibrary
+			.then { library ->
+				library?.let { l ->
+					val listResolvedPromise = response(
+						OnGetLibraryViewItemResultsComplete(
 							activity,
-							lazyListView.getObject(),
-							lazyProgressBar.getObject(),
+							lazyListView.value,
+							lazyProgressBar.value,
 							itemListMenuChangeHandler,
 							FileListParameters.getInstance(),
-							new StoredItemAccess(activity),
-							library), activity);
+							StoredItemAccess(activity),
+							library),
+						activity)
 
-				final Runnable playlistFillAction = new Runnable() {
-					@Override
-					public void run() {
-						SessionConnection.getInstance(activity).promiseSessionConnection()
-							.eventually(c -> ItemProvider.provide(c, library.getSelectedView()))
-							.eventually(listResolvedPromise)
-							.excuse(new HandleViewIoException(activity, this))
-							.eventuallyExcuse(LoopedInPromise.response(new UnexpectedExceptionToasterResponse(activity), activity));
+					val playlistFillAction = object : Runnable {
+						override fun run() {
+							getInstance(activity).promiseSessionConnection()
+								.eventually { c -> c.promiseItems(l.selectedView) }
+								.eventually(listResolvedPromise)
+								.excuse(HandleViewIoException(activity, this))
+								.eventuallyExcuse(response(UnexpectedExceptionToasterResponse(activity), activity))
+						}
 					}
-				};
 
-				playlistFillAction.run();
-			}));
+					playlistFillAction.run()
+				}
+			}
 	}
 
-	public void setOnItemListMenuChangeHandler(IItemListMenuChangeHandler itemListMenuChangeHandler) {
-		this.itemListMenuChangeHandler = itemListMenuChangeHandler;
+	fun setOnItemListMenuChangeHandler(itemListMenuChangeHandler: IItemListMenuChangeHandler?) {
+		this.itemListMenuChangeHandler = itemListMenuChangeHandler
 	}
 }

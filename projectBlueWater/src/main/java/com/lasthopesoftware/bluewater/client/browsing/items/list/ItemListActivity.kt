@@ -11,7 +11,7 @@ import android.widget.ViewAnimator
 import androidx.appcompat.app.AppCompatActivity
 import com.lasthopesoftware.bluewater.R
 import com.lasthopesoftware.bluewater.client.browsing.items.Item
-import com.lasthopesoftware.bluewater.client.browsing.items.access.ItemProvider
+import com.lasthopesoftware.bluewater.client.browsing.items.access.ItemProvider.Companion.promiseItems
 import com.lasthopesoftware.bluewater.client.browsing.items.list.menus.changes.handlers.ItemListMenuChangeHandler
 import com.lasthopesoftware.bluewater.client.browsing.items.media.files.access.parameters.FileListParameters
 import com.lasthopesoftware.bluewater.client.browsing.items.menu.LongClickViewAnimatorListener
@@ -104,10 +104,7 @@ class ItemListActivity : AppCompatActivity(), IItemListViewContainer {
 		itemListView.findView().visibility = View.INVISIBLE
 		pbLoading.findView().visibility = View.VISIBLE
 		getInstance(this).promiseSessionConnection()
-			.eventually { c ->
-				val itemProvider = ItemProvider(c)
-				itemProvider.promiseItems(itemId)
-			}
+			.eventually { c -> c.promiseItems(itemId) }
 			.eventually(LoopedInPromise.response({ items -> buildItemListView(items) }, this))
 			.then { isListViewHydrated = true }
 			.excuse(HandleViewIoException(this) { hydrateItems() })

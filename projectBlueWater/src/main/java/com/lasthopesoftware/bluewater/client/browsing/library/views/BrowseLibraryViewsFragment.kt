@@ -12,7 +12,7 @@ import androidx.viewpager.widget.ViewPager
 import com.google.android.material.tabs.TabLayout
 import com.lasthopesoftware.bluewater.R
 import com.lasthopesoftware.bluewater.client.browsing.items.Item
-import com.lasthopesoftware.bluewater.client.browsing.items.access.ItemProvider
+import com.lasthopesoftware.bluewater.client.browsing.items.access.ItemProvider.Companion.promiseItems
 import com.lasthopesoftware.bluewater.client.browsing.items.list.menus.changes.handlers.IItemListMenuChangeHandler
 import com.lasthopesoftware.bluewater.client.browsing.items.menu.LongClickViewAnimatorListener
 import com.lasthopesoftware.bluewater.client.browsing.library.access.LibraryRepository
@@ -130,11 +130,11 @@ class BrowseLibraryViewsFragment : Fragment(R.layout.tabbed_library_items_layout
 				.then { it?.let { library ->
 					getInstance(context)
 						.promiseSessionConnection()
-						.eventually { c -> ItemProvider.provide(c, library.selectedView) }
+						.eventually { c -> c.promiseItems(library.selectedView) }
 						.eventually(fillVisibleViews.value)
 						.run {
 							if (savedInstanceState == null) this
-							else this.eventually<Unit>(LoopedInPromise.response({
+							else this.eventually(LoopedInPromise.response({
 								val savedSelectedView = savedInstanceState.getInt(SAVED_SELECTED_VIEW, -1)
 								if (savedSelectedView < 0 || savedSelectedView != library.selectedView) return@response
 

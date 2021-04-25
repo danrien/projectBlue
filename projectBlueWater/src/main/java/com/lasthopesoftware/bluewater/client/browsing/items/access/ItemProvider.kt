@@ -13,6 +13,9 @@ class ItemProvider(private val connectionProvider: IConnectionProvider) : Provid
 	companion object {
 		private val logger = LoggerFactory.getLogger(ItemProvider::class.java)
 
+		fun IConnectionProvider.promiseItems(itemKey: Int): Promise<List<Item>> =
+			ItemProvider(this).promiseItems(itemKey)
+
 		@JvmStatic
 		fun provide(connectionProvider: IConnectionProvider, itemKey: Int): Promise<List<Item>> =
 			ItemProvider(connectionProvider).promiseItems(itemKey)
