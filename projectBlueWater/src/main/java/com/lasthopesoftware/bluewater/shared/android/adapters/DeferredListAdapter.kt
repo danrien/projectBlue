@@ -20,19 +20,16 @@ abstract class DeferredListAdapter<T, ViewHolder : RecyclerView.ViewHolder?>(
 	private var currentUpdate: Promise<Unit> = Promise.empty()
 
 	@Synchronized
-	fun updateListEventually(list: List<T>): Promise<Unit> {
-		return currentUpdate
-			.eventually({ PromisedListUpdate(list) }, { PromisedListUpdate(list) })
-			.apply { currentUpdate = this }
-	}
+	fun updateListEventually(list: List<T>): Promise<Unit> =
+		currentUpdate
+			.eventually({ promiseListUpdate(list) }, { promiseListUpdate(list) })
+			.also { currentUpdate = it }
 
-	private inner class PromisedListUpdate(list: List<T>) : LoopedInPromise<Unit>(
-		MessengerOperator<Unit> {
-			try {
-				submitList(list) { it.sendResolution(Unit) }
-			} catch (e: Throwable) {
-				it.sendRejection(e)
-			}
-		},
-		handler.value)
+	private fun promiseListUpdate(list: List<T>) : Promise<Unit> = LoopedInPromise(MessengerOperator{
+		try {
+			submitList(list) { it.sendResolution(Unit) }
+		} catch (e: Throwable) {
+			it.sendRejection(e)
+		}
+	}, handler.value)
 }

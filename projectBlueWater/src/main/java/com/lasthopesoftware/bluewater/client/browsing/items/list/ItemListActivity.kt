@@ -12,7 +12,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.lasthopesoftware.bluewater.R
 import com.lasthopesoftware.bluewater.client.browsing.items.Item
 import com.lasthopesoftware.bluewater.client.browsing.items.access.ItemProvider
-import com.lasthopesoftware.bluewater.client.browsing.items.list.ItemListActivity
 import com.lasthopesoftware.bluewater.client.browsing.items.list.menus.changes.handlers.ItemListMenuChangeHandler
 import com.lasthopesoftware.bluewater.client.browsing.items.media.files.access.parameters.FileListParameters
 import com.lasthopesoftware.bluewater.client.browsing.items.menu.LongClickViewAnimatorListener
@@ -31,10 +30,8 @@ import com.lasthopesoftware.bluewater.shared.android.view.LazyViewFinder
 import com.lasthopesoftware.bluewater.shared.android.view.ViewUtils
 import com.lasthopesoftware.bluewater.shared.exceptions.UnexpectedExceptionToasterResponse
 import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise
-import com.namehillsoftware.handoff.promises.response.ImmediateResponse
 
-class ItemListActivity : AppCompatActivity(), IItemListViewContainer, ImmediateResponse<List<Item>?, Unit> {
-	private val itemProviderComplete = lazy { LoopedInPromise.response(this, this) }
+class ItemListActivity : AppCompatActivity(), IItemListViewContainer {
 	private val itemListView = LazyViewFinder<ListView>(this, R.id.lvItems)
 	private val pbLoading = LazyViewFinder<ProgressBar>(this, R.id.pbLoadingItems)
 	private val lazySpecificLibraryProvider = lazy {
@@ -44,23 +41,29 @@ class ItemListActivity : AppCompatActivity(), IItemListViewContainer, ImmediateR
 		}
 
 	private lateinit var nowPlayingFloatingActionButton: NowPlayingFloatingActionButton
+	private var itemId = 0
 	private var viewAnimator: ViewAnimator? = null
-	private var mItemId = 0
+	private var isListViewHydrated = false
 
 	public override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
+
 		setContentView(R.layout.activity_view_items)
 		setSupportActionBar(findViewById(R.id.viewItemsToolbar))
 		supportActionBar?.setDisplayHomeAsUpEnabled(true)
-		mItemId = 0
-		if (savedInstanceState != null) mItemId = savedInstanceState.getInt(KEY)
-		if (mItemId == 0) mItemId = intent.getIntExtra(KEY, 0)
+
+		itemId = savedInstanceState?.getInt(KEY) ?: 0
+		if (itemId == 0) itemId = intent.getIntExtra(KEY, 0)
 		title = intent.getStringExtra(VALUE)
+
 		nowPlayingFloatingActionButton = addNowPlayingFloatingActionButton(findViewById(R.id.rlViewItems))
 	}
 
 	public override fun onStart() {
 		super.onStart()
+
+		if (isListViewHydrated) return
+
 		val doRestore = restoreSessionConnection(this)
 		if (!doRestore) hydrateItems()
 	}
@@ -70,62 +73,21 @@ class ItemListActivity : AppCompatActivity(), IItemListViewContainer, ImmediateR
 		super.onActivityResult(requestCode, resultCode, data)
 	}
 
-	private fun hydrateItems() {
-		itemListView.findView().visibility = View.INVISIBLE
-		pbLoading.findView().visibility = View.VISIBLE
-		getInstance(this).promiseSessionConnection()
-			.eventually { c ->
-				val itemProvider = ItemProvider(c)
-				itemProvider.promiseItems(mItemId)
-			}
-			.eventually(itemProviderComplete.value)
-			.excuse(HandleViewIoException(this) { hydrateItems() })
-			.eventuallyExcuse(LoopedInPromise.response(UnexpectedExceptionToasterResponse(this), this))
-			.then { finish() }
-	}
-
-	override fun respond(items: List<Item>?) {
-		items?.let { buildItemListView(it) }
-	}
-
-	private fun buildItemListView(items: List<Item>) {
-		lazySpecificLibraryProvider.value.browserLibrary
-			.eventually(LoopedInPromise.response({ library ->
-				val storedItemAccess = StoredItemAccess(this)
-				val itemListAdapter = ItemListAdapter(
-					this,
-					R.id.tvStandard,
-					items,
-					FileListParameters.getInstance(),
-					ItemListMenuChangeHandler(this),
-					storedItemAccess,
-					library)
-				val localItemListView = itemListView.findView()
-				localItemListView.adapter = itemListAdapter
-				localItemListView.onItemClickListener = ClickItemListener(items, pbLoading.findView())
-				localItemListView.onItemLongClickListener = LongClickViewAnimatorListener()
-				itemListView.findView().visibility = View.VISIBLE
-				pbLoading.findView().visibility = View.INVISIBLE
-			}, this))
-	}
-
-	public override fun onSaveInstanceState(savedInstanceState: Bundle) {
+	override fun onSaveInstanceState(savedInstanceState: Bundle) {
 		super.onSaveInstanceState(savedInstanceState)
-		savedInstanceState.putInt(KEY, mItemId)
+
+		savedInstanceState.putInt(KEY, itemId)
 	}
 
-	public override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+	override fun onRestoreInstanceState(savedInstanceState: Bundle) {
 		super.onRestoreInstanceState(savedInstanceState)
-		mItemId = savedInstanceState.getInt(KEY)
+		itemId = savedInstanceState.getInt(KEY)
 	}
 
-	override fun onCreateOptionsMenu(menu: Menu): Boolean {
-		return ViewUtils.buildStandardMenu(this, menu)
-	}
+	override fun onCreateOptionsMenu(menu: Menu): Boolean = ViewUtils.buildStandardMenu(this, menu)
 
-	override fun onOptionsItemSelected(item: MenuItem): Boolean {
-		return ViewUtils.handleNavMenuClicks(this, item) || super.onOptionsItemSelected(item)
-	}
+	override fun onOptionsItemSelected(item: MenuItem): Boolean =
+		ViewUtils.handleNavMenuClicks(this, item) || super.onOptionsItemSelected(item)
 
 	override fun onBackPressed() {
 		if (LongClickViewAnimatorListener.tryFlipToPreviousView(viewAnimator)) return
@@ -137,6 +99,47 @@ class ItemListActivity : AppCompatActivity(), IItemListViewContainer, ImmediateR
 	}
 
 	override fun getNowPlayingFloatingActionButton(): NowPlayingFloatingActionButton = nowPlayingFloatingActionButton
+
+	private fun hydrateItems() {
+		itemListView.findView().visibility = View.INVISIBLE
+		pbLoading.findView().visibility = View.VISIBLE
+		getInstance(this).promiseSessionConnection()
+			.eventually { c ->
+				val itemProvider = ItemProvider(c)
+				itemProvider.promiseItems(itemId)
+			}
+			.eventually(LoopedInPromise.response({ items -> items?.let { buildItemListView(it) } }, this))
+			.excuse(HandleViewIoException(this) { hydrateItems() })
+			.eventuallyExcuse(LoopedInPromise.response(UnexpectedExceptionToasterResponse(this), this))
+			.then { finish() }
+	}
+
+	private fun buildItemListView(items: List<Item>) {
+		lazySpecificLibraryProvider.value.browserLibrary
+			.eventually(LoopedInPromise.response({ library ->
+				if (library == null) {
+					finish()
+				} else {
+					val storedItemAccess = StoredItemAccess(this)
+					val itemListAdapter = ItemListAdapter(
+						this,
+						R.id.tvStandard,
+						items,
+						FileListParameters.getInstance(),
+						ItemListMenuChangeHandler(this),
+						storedItemAccess,
+						library)
+					val localItemListView = itemListView.findView()
+					localItemListView.isSaveEnabled = true
+					localItemListView.adapter = itemListAdapter
+					localItemListView.onItemClickListener = ClickItemListener(items, pbLoading.findView())
+					localItemListView.onItemLongClickListener = LongClickViewAnimatorListener()
+					localItemListView.visibility = View.VISIBLE
+					pbLoading.findView().visibility = View.INVISIBLE
+					isListViewHydrated = true
+				}
+			}, this))
+	}
 
 	companion object {
 		private val magicPropertyBuilder = MagicPropertyBuilder(ItemListActivity::class.java)
