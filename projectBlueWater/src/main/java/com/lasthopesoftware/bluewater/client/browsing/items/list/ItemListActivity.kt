@@ -108,7 +108,8 @@ class ItemListActivity : AppCompatActivity(), IItemListViewContainer {
 				val itemProvider = ItemProvider(c)
 				itemProvider.promiseItems(itemId)
 			}
-			.eventually(LoopedInPromise.response({ items -> items?.let { buildItemListView(it) } }, this))
+			.eventually(LoopedInPromise.response({ items -> buildItemListView(items) }, this))
+			.then { isListViewHydrated = true }
 			.excuse(HandleViewIoException(this) { hydrateItems() })
 			.eventuallyExcuse(LoopedInPromise.response(UnexpectedExceptionToasterResponse(this), this))
 			.then { finish() }
@@ -136,7 +137,6 @@ class ItemListActivity : AppCompatActivity(), IItemListViewContainer {
 					localItemListView.onItemLongClickListener = LongClickViewAnimatorListener()
 					localItemListView.visibility = View.VISIBLE
 					pbLoading.findView().visibility = View.INVISIBLE
-					isListViewHydrated = true
 				}
 			}, this))
 	}

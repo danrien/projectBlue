@@ -23,7 +23,7 @@ class LibraryViewsByConnectionProvider : ProvideLibraryViewsUsingConnection {
 					.then { response: Response ->
 						response.body?.use { b ->
 							b.byteStream().use { s ->
-								val viewItems = ItemResponse.GetItems(s)
+								val viewItems = ItemResponse.parseItems(s)
 									.map { i ->
 										when (i.value) {
 											KnownViews.Playlists -> PlaylistViewItem(i.key)

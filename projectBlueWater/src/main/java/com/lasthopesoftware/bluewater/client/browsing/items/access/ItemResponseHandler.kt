@@ -1,43 +1,39 @@
-package com.lasthopesoftware.bluewater.client.browsing.items.access;
+package com.lasthopesoftware.bluewater.client.browsing.items.access
 
-import com.lasthopesoftware.bluewater.client.browsing.items.Item;
+import com.lasthopesoftware.bluewater.client.browsing.items.Item
+import org.xml.sax.Attributes
+import org.xml.sax.helpers.DefaultHandler
+import java.util.*
 
-import org.xml.sax.Attributes;
-import org.xml.sax.helpers.DefaultHandler;
+internal class ItemResponseHandler : DefaultHandler() {
+	private var currentValue: String? = null
+	private var currentKey: String? = null
+	private var currentPlaylistId: String? = null
 
-import java.util.ArrayList;
-import java.util.List;
+	val items: MutableList<Item> = ArrayList()
 
-class ItemResponseHandler extends DefaultHandler {
+	override fun startElement(uri: String, localName: String, qName: String, attributes: Attributes) {
+		currentValue = ""
+		currentKey = ""
+		if (!"item".equals(qName, ignoreCase = true)) return
 
-	private String currentValue;
-	private String currentKey;
-	private String currentPlaylistId;
-	
-	public final List<Item> items = new ArrayList<>();
-
-	public void startElement(String uri, String localName, String qName, Attributes attributes) {
-		currentValue = "";
-		currentKey = "";
-		
-		if (!"item".equalsIgnoreCase(qName)) return;
-
-		currentKey = attributes.getValue("Name");
-		currentPlaylistId = attributes.getValue("PlaylistID");
+		currentKey = attributes.getValue("Name")
+		currentPlaylistId = attributes.getValue("PlaylistID")
 	}
-	
-	public void characters(char[] ch, int start, int length) {
-		currentValue = new String(ch,start,length);
+
+	override fun characters(ch: CharArray, start: Int, length: Int) {
+		currentValue = String(ch, start, length)
 	}
-	
-	public void endElement(String uri, String localName, String qName) {
-		if (!"item".equalsIgnoreCase(qName)) return;
 
-		final Item item = new Item(Integer.parseInt(currentValue), currentKey);
+	override fun endElement(uri: String, localName: String, qName: String) {
+		if (!"item".equals(qName, ignoreCase = true)) return
 
-		if (currentPlaylistId != null && !currentPlaylistId.isEmpty())
-			item.setPlaylistId(Integer.parseInt(currentPlaylistId));
+		val currentVal = currentValue?.toInt() ?: return
+		val item = Item(currentVal, currentKey)
 
-		items.add(item);
+		val playlistIdString = currentPlaylistId
+		if (!playlistIdString.isNullOrEmpty()) item.playlistId = playlistIdString.toInt()
+
+		items.add(item)
 	}
 }
