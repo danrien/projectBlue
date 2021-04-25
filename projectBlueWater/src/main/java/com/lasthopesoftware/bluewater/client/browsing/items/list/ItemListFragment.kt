@@ -1,5 +1,6 @@
 package com.lasthopesoftware.bluewater.client.browsing.items.list
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -63,21 +64,21 @@ class ItemListFragment : Fragment() {
 	private var itemListMenuChangeHandler: IItemListMenuChangeHandler? = null
 	private var isViewHydrated = false
 
-	override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
-		lazyLayout.value
+	override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+		retainInstance = true
+		return lazyLayout.value
+	}
 
-	override fun onStart() {
-		super.onStart()
+	override fun onAttach(context: Context) {
+		super.onAttach(context)
 
 		if (isViewHydrated) return
-
-		val activity = activity ?: return
 
 		lazyListView.value.visibility = View.INVISIBLE
 		lazyProgressBar.value.visibility = View.VISIBLE
 
-		val libraryProvider = LibraryRepository(activity)
-		val selectedLibraryIdentifierProvider = SelectedBrowserLibraryIdentifierProvider(activity)
+		val libraryProvider = LibraryRepository(context)
+		val selectedLibraryIdentifierProvider = SelectedBrowserLibraryIdentifierProvider(context)
 		SelectedBrowserLibraryProvider(selectedLibraryIdentifierProvider, libraryProvider)
 			.browserLibrary
 			.then {
@@ -91,15 +92,15 @@ class ItemListFragment : Fragment() {
 
 							fillStandardItemView(category)
 						}
-					}, activity)
+					}, context)
 
 					val fillItemsRunnable = object : Runnable {
 						override fun run() {
-							getInstance(activity).promiseSessionConnection()
+							getInstance(context).promiseSessionConnection()
 								.eventually { c -> c.promiseItems(activeLibrary.selectedView) }
 								.eventually(onGetVisibleViewsCompleteListener)
-								.excuse(HandleViewIoException(activity, this))
-								.eventuallyExcuse(response(UnexpectedExceptionToasterResponse(activity), activity))
+								.excuse(HandleViewIoException(context, this))
+								.eventuallyExcuse(response(UnexpectedExceptionToasterResponse(context), context))
 						}
 					}
 					fillItemsRunnable.run()
@@ -109,6 +110,7 @@ class ItemListFragment : Fragment() {
 
 	private fun fillStandardItemView(category: IItem) {
 		val activity = activity ?: return
+		val itemListMenuChangeHandler = itemListMenuChangeHandler ?: return
 
 		val libraryProvider = LibraryRepository(activity)
 		val selectedLibraryIdentifierProvider = SelectedBrowserLibraryIdentifierProvider(activity)

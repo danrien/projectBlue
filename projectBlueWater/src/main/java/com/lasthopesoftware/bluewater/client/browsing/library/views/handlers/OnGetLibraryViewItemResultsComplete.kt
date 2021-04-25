@@ -17,7 +17,7 @@ import com.namehillsoftware.handoff.promises.response.ImmediateResponse
 /**
  * Created by david on 11/5/15.
  */
-class OnGetLibraryViewItemResultsComplete(private val activity: Activity, private val listView: ListView, private val loadingView: View, private val itemListMenuChangeHandler: IItemListMenuChangeHandler?, private val fileListParameterProvider: IFileListParameterProvider, private val storedItemAccess: StoredItemAccess, private val library: Library) : ImmediateResponse<List<Item>, Unit> {
+class OnGetLibraryViewItemResultsComplete(private val activity: Activity, private val listView: ListView, private val loadingView: View, private val itemListMenuChangeHandler: IItemListMenuChangeHandler, private val fileListParameterProvider: IFileListParameterProvider, private val storedItemAccess: StoredItemAccess, private val library: Library) : ImmediateResponse<List<Item>, Unit> {
 	override fun respond(result: List<Item>) {
 		listView.onItemLongClickListener = LongClickViewAnimatorListener()
 		listView.adapter = DemoableItemListAdapter(activity, R.id.tvStandard, result, fileListParameterProvider, itemListMenuChangeHandler, storedItemAccess, library)

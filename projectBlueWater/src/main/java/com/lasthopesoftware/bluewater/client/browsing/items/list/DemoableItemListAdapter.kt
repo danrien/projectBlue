@@ -17,10 +17,11 @@ import tourguide.tourguide.ToolTip
 import tourguide.tourguide.TourGuide
 
 class DemoableItemListAdapter(
-	private val activity: Activity, resource: Int,
+	private val activity: Activity,
+	resource: Int,
 	private val items: List<Item>,
 	fileListParameterProvider: IFileListParameterProvider,
-	itemListMenuEvents: IItemListMenuChangeHandler?,
+	itemListMenuEvents: IItemListMenuChangeHandler,
 	storedItemAccess: StoredItemAccess,
 	library: Library) :
 	ItemListAdapter(

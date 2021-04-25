@@ -2,6 +2,7 @@ package com.lasthopesoftware.bluewater.client.browsing.items.playlists
 
 import android.R
 import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -53,18 +54,19 @@ class PlaylistListFragment : Fragment() {
 	override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
 		lazyLayout.value
 
-	override fun onStart() {
-		super.onStart()
+	override fun onAttach(context: Context) {
+		super.onAttach(context)
 
 		if (isViewHydrated) return
 
 		val activity = activity ?: return
+		val itemListMenuChangeHandler = itemListMenuChangeHandler ?: return
 
 		lazyListView.value.visibility = View.INVISIBLE
 		lazyProgressBar.value.visibility = View.VISIBLE
 
-		val selectedLibraryIdentifierProvider = SelectedBrowserLibraryIdentifierProvider(activity)
-		val libraryProvider = LibraryRepository(activity)
+		val selectedLibraryIdentifierProvider = SelectedBrowserLibraryIdentifierProvider(context)
+		val libraryProvider = LibraryRepository(context)
 		SelectedBrowserLibraryProvider(selectedLibraryIdentifierProvider, libraryProvider)
 			.browserLibrary
 			.then {
@@ -76,18 +78,18 @@ class PlaylistListFragment : Fragment() {
 							lazyProgressBar.value,
 							itemListMenuChangeHandler,
 							FileListParameters.getInstance(),
-							StoredItemAccess(activity),
+							StoredItemAccess(context),
 							library),
-						activity)
+						context)
 
 					val playlistFillAction = object : Runnable {
 						override fun run() {
-							getInstance(activity).promiseSessionConnection()
+							getInstance(context).promiseSessionConnection()
 								.eventually { c -> c.promiseItems(library.selectedView) }
 								.eventually(listResolvedPromise)
 								.then { isViewHydrated = true }
-								.excuse(HandleViewIoException(activity, this))
-								.eventuallyExcuse(response(UnexpectedExceptionToasterResponse(activity), activity))
+								.excuse(HandleViewIoException(context, this))
+								.eventuallyExcuse(response(UnexpectedExceptionToasterResponse(context), context))
 						}
 					}
 
