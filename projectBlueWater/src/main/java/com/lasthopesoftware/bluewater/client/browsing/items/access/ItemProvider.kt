@@ -15,10 +15,6 @@ class ItemProvider(private val connectionProvider: IConnectionProvider) : Provid
 
 		fun IConnectionProvider.promiseItems(itemKey: Int): Promise<List<Item>> =
 			ItemProvider(this).promiseItems(itemKey)
-
-		@JvmStatic
-		fun provide(connectionProvider: IConnectionProvider, itemKey: Int): Promise<List<Item>> =
-			ItemProvider(connectionProvider).promiseItems(itemKey)
 	}
 
 	override fun promiseItems(itemKey: Int): Promise<List<Item>> =

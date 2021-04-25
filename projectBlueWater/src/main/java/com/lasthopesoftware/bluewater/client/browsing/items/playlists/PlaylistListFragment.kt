@@ -49,9 +49,8 @@ class PlaylistListFragment : Fragment() {
 			layout
 		}
 
-	override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-		return lazyLayout.value
-	}
+	override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
+		lazyLayout.value
 
 	override fun onStart() {
 		super.onStart()
@@ -65,8 +64,8 @@ class PlaylistListFragment : Fragment() {
 		val libraryProvider = LibraryRepository(activity)
 		SelectedBrowserLibraryProvider(selectedLibraryIdentifierProvider, libraryProvider)
 			.browserLibrary
-			.then { library ->
-				library?.let { l ->
+			.then {
+				it?.let { library ->
 					val listResolvedPromise = response(
 						OnGetLibraryViewItemResultsComplete(
 							activity,
@@ -81,7 +80,7 @@ class PlaylistListFragment : Fragment() {
 					val playlistFillAction = object : Runnable {
 						override fun run() {
 							getInstance(activity).promiseSessionConnection()
-								.eventually { c -> c.promiseItems(l.selectedView) }
+								.eventually { c -> c.promiseItems(library.selectedView) }
 								.eventually(listResolvedPromise)
 								.excuse(HandleViewIoException(activity, this))
 								.eventuallyExcuse(response(UnexpectedExceptionToasterResponse(activity), activity))
