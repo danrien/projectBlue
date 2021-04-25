@@ -24,8 +24,6 @@ import com.lasthopesoftware.bluewater.shared.exceptions.UnexpectedExceptionToast
 import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise.Companion.response
 
 class PlaylistListFragment : Fragment() {
-	private var itemListMenuChangeHandler: IItemListMenuChangeHandler? = null
-
 	private val lazyListView = lazy {
 			val listView = ListView(activity)
 			listView.visibility = View.INVISIBLE
@@ -49,11 +47,16 @@ class PlaylistListFragment : Fragment() {
 			layout
 		}
 
+	private var itemListMenuChangeHandler: IItemListMenuChangeHandler? = null
+	private var isViewHydrated = false
+
 	override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
 		lazyLayout.value
 
 	override fun onStart() {
 		super.onStart()
+
+		if (isViewHydrated) return
 
 		val activity = activity ?: return
 
@@ -82,6 +85,7 @@ class PlaylistListFragment : Fragment() {
 							getInstance(activity).promiseSessionConnection()
 								.eventually { c -> c.promiseItems(library.selectedView) }
 								.eventually(listResolvedPromise)
+								.then { isViewHydrated = true }
 								.excuse(HandleViewIoException(activity, this))
 								.eventuallyExcuse(response(UnexpectedExceptionToasterResponse(activity), activity))
 						}
