@@ -8,7 +8,7 @@ import com.namehillsoftware.handoff.promises.Promise
 import org.slf4j.LoggerFactory
 import java.io.IOException
 
-class ItemProvider(private val connectionProvider: IConnectionProvider) : ProvideItems {
+class ItemProvider private constructor(private val connectionProvider: IConnectionProvider) : ProvideItems {
 
 	companion object {
 		private val logger = LoggerFactory.getLogger(ItemProvider::class.java)

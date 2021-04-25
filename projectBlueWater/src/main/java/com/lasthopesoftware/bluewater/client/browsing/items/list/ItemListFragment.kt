@@ -1,6 +1,5 @@
 package com.lasthopesoftware.bluewater.client.browsing.items.list
 
-import android.app.Activity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -23,48 +22,46 @@ import com.lasthopesoftware.bluewater.client.connection.session.SessionConnectio
 import com.lasthopesoftware.bluewater.client.stored.library.items.StoredItemAccess
 import com.lasthopesoftware.bluewater.shared.exceptions.UnexpectedExceptionToasterResponse
 import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise.Companion.response
-import com.namehillsoftware.lazyj.AbstractSynchronousLazy
-import com.namehillsoftware.lazyj.CreateAndHold
 
 class ItemListFragment : Fragment() {
-	private var itemListMenuChangeHandler: IItemListMenuChangeHandler? = null
-	private val lazyListView: CreateAndHold<ListView> = object : AbstractSynchronousLazy<ListView>() {
-		override fun create(): ListView {
+
+	private val lazyListView = lazy {
 			val listView = ListView(activity)
 			listView.visibility = View.INVISIBLE
-			return listView
+			listView
 		}
-	}
-	private val lazyProgressBar: CreateAndHold<ProgressBar> = object : AbstractSynchronousLazy<ProgressBar>() {
-		override fun create(): ProgressBar {
+
+	private val lazyProgressBar = lazy {
 			val pbLoading = ProgressBar(activity, null, android.R.attr.progressBarStyleLarge)
 			val pbParams = RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 			pbParams.addRule(RelativeLayout.CENTER_IN_PARENT)
 			pbLoading.layoutParams = pbParams
-			return pbLoading
+			pbLoading
 		}
-	}
-	private val lazyLayout: CreateAndHold<RelativeLayout> = object : AbstractSynchronousLazy<RelativeLayout>() {
-		override fun create(): RelativeLayout {
-			val activity: Activity? = activity
+
+	private val lazyLayout = lazy {
 			val layout = RelativeLayout(activity)
 			layout.layoutParams = RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-			layout.addView(lazyProgressBar.getObject())
-			layout.addView(lazyListView.getObject())
-			return layout
+			layout.addView(lazyProgressBar.value)
+			layout.addView(lazyListView.value)
+			layout
 		}
-	}
 
-	override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-		return lazyLayout.getObject()
-	}
+	private var itemListMenuChangeHandler: IItemListMenuChangeHandler? = null
+	private var isViewHydrated = false
+
+	override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
+		lazyLayout.value
 
 	override fun onStart() {
 		super.onStart()
+
+		if (isViewHydrated) return
+
 		val activity = activity ?: return
 
-		lazyListView.getObject().visibility = View.INVISIBLE
-		lazyProgressBar.getObject().visibility = View.VISIBLE
+		lazyListView.value.visibility = View.INVISIBLE
+		lazyProgressBar.value.visibility = View.VISIBLE
 
 		val libraryProvider = LibraryRepository(activity)
 		val selectedLibraryIdentifierProvider = SelectedBrowserLibraryIdentifierProvider(activity)
@@ -108,8 +105,8 @@ class ItemListFragment : Fragment() {
 				it?.let { library ->
 					val onGetLibraryViewItemResultsComplete = response(OnGetLibraryViewItemResultsComplete(
 						activity,
-						lazyListView.getObject(),
-						lazyProgressBar.getObject(),
+						lazyListView.value,
+						lazyProgressBar.value,
 						itemListMenuChangeHandler,
 						FileListParameters.getInstance(),
 						StoredItemAccess(activity),
@@ -119,6 +116,7 @@ class ItemListFragment : Fragment() {
 							getInstance(activity).promiseSessionConnection()
 								.eventually { c -> c.promiseItems(category.key) }
 								.eventually(onGetLibraryViewItemResultsComplete)
+								.then { isViewHydrated = true }
 								.excuse(HandleViewIoException(activity, this))
 								.eventuallyExcuse(response(UnexpectedExceptionToasterResponse(activity), activity))
 						}
