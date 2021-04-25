@@ -1,20 +1,18 @@
-package com.lasthopesoftware.bluewater.shared.exceptions;
+package com.lasthopesoftware.bluewater.shared.exceptions
 
-import android.content.Context;
-import com.namehillsoftware.handoff.promises.response.ImmediateResponse;
+import android.content.Context
+import com.namehillsoftware.handoff.promises.response.ImmediateResponse
+import org.slf4j.LoggerFactory
 
-public class UnexpectedExceptionToasterResponse implements ImmediateResponse<Throwable, Void> {
+class UnexpectedExceptionToasterResponse(private val context: Context) : ImmediateResponse<Throwable?, Void?> {
 
-	private final Context context;
-
-	public UnexpectedExceptionToasterResponse(Context context) {
-		this.context = context;
+	companion object {
+		private val logger = LoggerFactory.getLogger(UnexpectedExceptionToasterResponse::class.java)
 	}
 
-	@Override
-	public Void respond(Throwable error) {
-		UnexpectedExceptionToaster.announce(context, error);
-
-		return null;
+	override fun respond(error: Throwable?): Void? {
+		logger.error("An unexpected exception occurred", error)
+		UnexpectedExceptionToaster.announce(context, error)
+		return null
 	}
 }

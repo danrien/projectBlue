@@ -12,7 +12,7 @@ import com.lasthopesoftware.bluewater.client.browsing.items.menu.handlers.ViewCh
 import com.lasthopesoftware.bluewater.client.browsing.library.repository.Library
 import com.lasthopesoftware.bluewater.client.stored.library.items.StoredItemAccess
 
-open class ItemListAdapter internal constructor(activity: Activity, resource: Int, items: List<Item>, fileListParameterProvider: IFileListParameterProvider, itemListMenuEvents: IItemListMenuChangeHandler, storedItemAccess: StoredItemAccess, library: Library)
+open class ItemListAdapter internal constructor(activity: Activity, resource: Int, items: List<Item>, fileListParameterProvider: IFileListParameterProvider, itemListMenuEvents: IItemListMenuChangeHandler?, storedItemAccess: StoredItemAccess, library: Library)
 	: ArrayAdapter<Item>(activity, resource, items) {
 
 	private val listItemMenuBuilder: ListItemMenuBuilder

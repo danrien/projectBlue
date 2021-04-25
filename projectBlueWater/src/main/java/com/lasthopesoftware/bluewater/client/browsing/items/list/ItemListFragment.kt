@@ -25,6 +25,19 @@ import com.lasthopesoftware.bluewater.shared.promises.extensions.LoopedInPromise
 
 class ItemListFragment : Fragment() {
 
+	companion object {
+		private const val ARG_CATEGORY_POSITION = "category_position"
+
+		@JvmStatic
+		fun getPreparedFragment(libraryViewId: Int): ItemListFragment {
+			val returnFragment = ItemListFragment()
+			val args = Bundle()
+			args.putInt(ARG_CATEGORY_POSITION, libraryViewId)
+			returnFragment.arguments = args
+			return returnFragment
+		}
+	}
+
 	private val lazyListView = lazy {
 			val listView = ListView(activity)
 			listView.visibility = View.INVISIBLE
@@ -128,17 +141,5 @@ class ItemListFragment : Fragment() {
 
 	fun setOnItemListMenuChangeHandler(itemListMenuChangeHandler: IItemListMenuChangeHandler?) {
 		this.itemListMenuChangeHandler = itemListMenuChangeHandler
-	}
-
-	companion object {
-		private const val ARG_CATEGORY_POSITION = "category_position"
-		@JvmStatic
-		fun getPreparedFragment(libraryViewId: Int): ItemListFragment {
-			val returnFragment = ItemListFragment()
-			val args = Bundle()
-			args.putInt(ARG_CATEGORY_POSITION, libraryViewId)
-			returnFragment.arguments = args
-			return returnFragment
-		}
 	}
 }
